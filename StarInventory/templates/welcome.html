@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+
+{% block content %}
+    <div class="center">
+        <h1 class="h3 mb-0 text-gray-800">Welcome to the Star Inventory system</h1>
+        <p>Please navigate using the sidebar to get started</p>
+        <img src="{% static 'StarElectronics2/img/inventory.png' %}" alt="inventory"/>
+    </div>
+{% endblock %}
