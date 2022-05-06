@@ -2,8 +2,8 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView
 
-from StarInventory.forms import PartForm
-from StarInventory.models import Part
+from StarInventory.forms import PartForm, CustomerForm
+from StarInventory.models import Part, Customer
 
 
 def index(request):
@@ -12,9 +12,8 @@ def index(request):
 
 def list_parts(request):
     parts = Part.objects.all()
-    context = {"parts" : parts}
+    context = {"parts": parts}
     return render(request, "list_parts.html", context)
-
 
 class CreatePartView(CreateView):
     model = Part
@@ -30,3 +29,24 @@ class UpdatePartView(UpdateView):
     template_name = "update_part.html"
 
     success_url = reverse_lazy("list_parts")
+
+
+def list_customers(request):
+    customers = Customer.objects.all()
+    context = {"customers": customers}
+    return render(request, "list_customers.html", context)
+
+
+class CreateCustomerView(CreateView):
+    model = Customer
+    form_class = CustomerForm
+    template_name = "create_customer.html"
+
+    success_url = reverse_lazy("list_customers")
+
+class UpdateCustomerView(UpdateView):
+    model = Customer
+    form_class = CustomerForm
+    template_name = "update_customer.html"
+
+    success_url = reverse_lazy("list_customers")

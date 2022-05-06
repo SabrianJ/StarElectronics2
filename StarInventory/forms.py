@@ -1,6 +1,6 @@
 from django import forms
 
-from StarInventory.models import Part
+from StarInventory.models import Part, Customer
 
 
 class PartForm(forms.ModelForm):
@@ -18,6 +18,18 @@ class PartForm(forms.ModelForm):
             'manufacturer': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Manufacturer'}),
             'supplier': forms.Select(attrs={'class': 'form-control'})
         }
+
+
+class CustomerForm(forms.ModelForm):
+    class Meta:
+        model = Customer
+        fields = ("name", "phoneNumber", "email")
+        widgets= {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Name'}),
+            'phoneNumber': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone Number'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
+        }
+
 
 
 
