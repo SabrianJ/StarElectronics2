@@ -1,12 +1,14 @@
 from django import forms
 
-from StarInventory.models import Part, Customer
+from StarInventory.models import Part, Customer, Supplier
 
 
 class PartForm(forms.ModelForm):
     class Meta:
         model = Part
-        fields = ('name','stock','cost','reorder_level','order_quantity','reserved_stock','description','manufacturer','supplier')
+        fields = (
+        'name', 'stock', 'cost', 'reorder_level', 'order_quantity', 'reserved_stock', 'description', 'manufacturer',
+        'supplier')
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Name'}),
             'stock': forms.NumberInput(attrs={'class': 'form-control'}),
@@ -24,12 +26,19 @@ class CustomerForm(forms.ModelForm):
     class Meta:
         model = Customer
         fields = ("name", "phoneNumber", "email")
-        widgets= {
+        widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Name'}),
             'phoneNumber': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone Number'}),
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
         }
 
 
-
-
+class SupplierForm(forms.ModelForm):
+    class Meta:
+        model = Supplier
+        fields = ("name", "phoneNumber", "email")
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Name'}),
+            'phoneNumber': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone Number'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
+        }
