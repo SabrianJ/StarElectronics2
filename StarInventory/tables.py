@@ -29,6 +29,7 @@ class PartTable(tables.Table):
 
 class OrderItemTable(tables.Table):
     total_price = tables.Column(orderable=False, verbose_name='Total Price')
+    unit_price = tables.Column(accessor='part.cost', verbose_name='@')
     action = tables.TemplateColumn('''
         {% if not instance.confirm %}
             <button data-href="{% url "ajax_modify" record.id "add" %}" class="btn btn-success edit_button"><i class="fa fa-arrow-up"></i></button>
@@ -40,4 +41,4 @@ class OrderItemTable(tables.Table):
     class Meta:
         model = OrderItem
         template_name = 'django_tables2/bootstrap.html'
-        fields = ['part', 'quantity', 'total_price']
+        fields = ['part', 'quantity', 'unit_price', 'total_price']
