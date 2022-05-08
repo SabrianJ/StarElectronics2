@@ -84,20 +84,6 @@ class UpdateSupplierView(UpdateView):
     success_url = reverse_lazy("list_suppliers")
 
 
-class HomepageView(ListView):
-    template_name = 'index.html'
-    model = CustomerOrder
-    queryset = CustomerOrder.objects.all()[:10]
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        orders = CustomerOrder.objects.all()
-        orders = OrderTable(orders)
-        RequestConfig(self.request).configure(orders)
-        context.update(locals())
-        return context
-
-
 class OrderListView(ListView):
     template_name = 'list.html'
     model = CustomerOrder
@@ -115,12 +101,6 @@ class OrderListView(ListView):
         RequestConfig(self.request).configure(orders)
         context.update(locals())
         return context
-
-
-def list_orders(request):
-    customer_orders = CustomerOrder.objects.all()
-    context = {"orders": customer_orders}
-    return render(request, "list_orders.html", context)
 
 
 def ajax_calculate_results_view(request):
@@ -271,6 +251,4 @@ def delete_order(request, pk):
 
 def done_order_view(request, pk):
     instance = get_object_or_404(CustomerOrder, id=pk)
-    instance.status = True
-    instance.save()
     return redirect(reverse('home'))

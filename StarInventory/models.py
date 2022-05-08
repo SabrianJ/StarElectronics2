@@ -109,8 +109,6 @@ class CustomerOrder(models.Model):
         date_start = request.GET.get('date_start', None)
         date_end = request.GET.get('date_end', None)
         if date_end and date_start and date_end >= date_start:
-            date_start = datetime.datetime.strptime(date_start, '%m/%d/%Y').strftime('%Y-%m-%d')
-            date_end = datetime.datetime.strptime(date_end, '%m/%d/%Y').strftime('%Y-%m-%d')
             print(date_start, date_end)
             queryset = queryset.filter(date__range=[date_start, date_end])
         return queryset

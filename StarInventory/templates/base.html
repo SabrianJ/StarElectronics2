@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-{% load static %}
+{% load render_table from django_tables2 %}{% load static %}
 <head>
 
     <meta charset="utf-8">
@@ -21,6 +21,9 @@
     <link
             href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
             rel="stylesheet">
+
+    <link href="{% static 'assets/libs/fullcalendar/dist/fullcalendar.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'assets/extra-libs/calendar/calendar.css' %}" rel="stylesheet"/>
 
     {% block head %}{% endblock %}
 
@@ -121,7 +124,7 @@
                  data-parent="#accordionSidebar">
                 <div class="bg-white py-2 collapse-inner rounded">
                     <h6 class="collapse-header">Customer Order:</h6>
-                    <a class="collapse-item" href="">Create customer order</a>
+                    <a class="collapse-item" href="{% url 'create-order' %}">Create customer order</a>
                     <a class="collapse-item" href="{% url 'list_orders' %}">List Customer Order</a>
                 </div>
             </div>
@@ -240,6 +243,7 @@
 <!-- Page level custom scripts -->
 <script src="{% static 'StarElectronics2/js/demo/chart-area-demo.js' %}"></script>
 <script src="{% static 'StarElectronics2/js/demo/chart-pie-demo.js' %}"></script>
+
 
 {% block script %}{% endblock %}
 

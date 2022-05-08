@@ -2,7 +2,7 @@ from django.urls import path
 
 from . import views
 from .views import CreatePartView, UpdatePartView, list_parts, list_customers, CreateCustomerView, UpdateCustomerView, \
-    list_suppliers, UpdateSupplierView, CreateSupplierView, list_orders, HomepageView, OrderListView, \
+    list_suppliers, UpdateSupplierView, CreateSupplierView, OrderListView, \
     ajax_calculate_results_view, CreateOrderView, OrderUpdateView, done_order_view, delete_order, ajax_add_product, \
     ajax_modify_order_item, order_action_view, ajax_search_parts
 
@@ -17,7 +17,6 @@ urlpatterns = [
     path('suppliers', list_suppliers, name="list_suppliers"),
     path('supplier/create', CreateSupplierView.as_view(), name="create_supplier"),
     path('supplier/<int:pk>/update', UpdateSupplierView.as_view(), name="update_supplier"),
-    path('customer/orders/control', HomepageView.as_view(), name="control_orders"),
     path('customer/orders/list', OrderListView.as_view(), name="list_orders"),
     path('customer/orders/create', CreateOrderView.as_view(), name='create-order'),
     path('customer/orders/update/<int:pk>/', OrderUpdateView.as_view(), name='update_order'),

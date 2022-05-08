@@ -1,154 +1,141 @@
-{% extends 'index.html' %} {% load render_table from django_tables2 %}
+{% extends 'base.html' %} {% load render_table from django_tables2 %}
 
 {% block content %}
-    <div class="page-wrapper">
-        <div class="page-breadcrumb">
-            <div class="row">
-                <div class="col-12 d-flex no-block align-items-center">
-                    <h4 class="page-title">{{ instance.date }} - {{ instance }}</h4>
-                    <div class="ml-auto text-right">
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">{{ instance }}</li>
-                            </ol>
-                        </nav>
-                    </div>
+    <div class="page-breadcrumb">
+        <div class="row">
+            <div class="col-12 d-flex no-block align-items-center">
+                <h4 class="page-title">{{ instance }}</h4>
+                <div class="ml-auto text-right">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">{{ instance }}</li>
+                        </ol>
+                    </nav>
                 </div>
             </div>
         </div>
+    </div>
 
-        {% if instance.confirm %}
-            <div class="container-fluid">
-            <div class="container card">
-                <div class="row mt-4">
-                    <div class="col-12 col-lg-12">
+    {% if instance.confirm %}
+        <div class="container card">
+            <div class="row mt-4">
+                <div class="col-12 col-lg-12">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="text-center text-150">
+                                <i class="fa fa-truck-ramp-box fa-2x text-success-m2 mr-1"></i>
+                                <span class="text-default-d3">Star Electronics</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- .row -->
+
+                    <hr class="row brc-default-l1 mx-n1 mb-4"/>
+
+                    <div class="row" style="margin-left: 10px">
+                        <div class="col-sm-6">
+                            <div>
+                                <span class="text-sm text-grey-m2 align-middle">To:</span>
+                                <span class="text-600 text-110 text-blue align-middle">{{ instance.customer.name }}</span>
+                            </div>
+                            <div class="text-grey-m2">
+                                <div class="my-1">
+                                    {{ instance.customer.email }}
+                                </div>
+                                <div class="my-1"><i class="fa fa-phone fa-flip-horizontal text-secondary"></i> <b
+                                        class="text-600">{{ instance.customer.phoneNumber }}</b></div>
+                            </div>
+                        </div>
+                        <!-- /.col -->
+
+                        <div class="text-95 col-sm-6 align-self-start d-sm-flex justify-content-end">
+                            <hr class="d-sm-none"/>
+                            <div class="text-grey-m2">
+                                <div class="mt-1 mb-2 text-secondary-m1 text-600 text-125">
+                                    Invoice
+                                </div>
+
+                                <div class="my-2"><i class="fa fa-circle text-blue-m2 text-xs mr-1"></i> <span
+                                        class="text-600 text-90">ID:</span> {{ instance.id }}
+                                </div>
+
+                                <div class="my-2"><i class="fa fa-circle text-blue-m2 text-xs mr-1"></i> <span
+                                        class="text-600 text-90">Issue Date:</span> {{ instance.date|date:"d/m/Y" }}
+                                </div>
+
+                                <div class="my-2"><i class="fa fa-circle text-blue-m2 text-xs mr-1"></i> <span
+                                        class="text-600 text-90">Status:</span> <span
+                                        class="badge badge-warning badge-pill px-25">Confirmed</span></div>
+                            </div>
+                        </div>
+                        <!-- /.col -->
+                    </div>
+
+                    <div class="container-fluid">
                         <div class="row">
-                            <div class="col-12">
-                                <div class="text-center text-150">
-                                    <i class="fa fa-truck-ramp-box fa-2x text-success-m2 mr-1"></i>
-                                    <span class="text-default-d3">Star Electronics</span>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- .row -->
-
-                        <hr class="row brc-default-l1 mx-n1 mb-4"/>
-
-                        <div class="row" style="margin-left: 10px">
-                            <div class="col-sm-6">
-                                <div>
-                                    <span class="text-sm text-grey-m2 align-middle">To:</span>
-                                    <span class="text-600 text-110 text-blue align-middle">{{ instance.customer.name }}</span>
-                                </div>
-                                <div class="text-grey-m2">
-                                    <div class="my-1">
-                                        {{ instance.customer.email }}
-                                    </div>
-                                    <div class="my-1"><i class="fa fa-phone fa-flip-horizontal text-secondary"></i> <b
-                                            class="text-600">{{ instance.customer.phoneNumber }}</b></div>
-                                </div>
-                            </div>
-                            <!-- /.col -->
-
-                            <div class="text-95 col-sm-6 align-self-start d-sm-flex justify-content-end">
-                                <hr class="d-sm-none"/>
-                                <div class="text-grey-m2">
-                                    <div class="mt-1 mb-2 text-secondary-m1 text-600 text-125">
-                                        Invoice
-                                    </div>
-
-                                    <div class="my-2"><i class="fa fa-circle text-blue-m2 text-xs mr-1"></i> <span
-                                            class="text-600 text-90">ID:</span> {{ instance.id }}
-                                    </div>
-
-                                    <div class="my-2"><i class="fa fa-circle text-blue-m2 text-xs mr-1"></i> <span
-                                            class="text-600 text-90">Issue Date:</span> {{ instance.date }}
-                                    </div>
-
-                                    <div class="my-2"><i class="fa fa-circle text-blue-m2 text-xs mr-1"></i> <span
-                                            class="text-600 text-90">Status:</span> <span
-                                            class="badge badge-warning badge-pill px-25">Confirmed</span></div>
-                                </div>
-                            </div>
-                            <!-- /.col -->
-                        </div>
-
-                        <div class="container-fluid">
-                            <div class="row">
-                                <div class="col-md-12 align-content-center">
-                                    <div class="card">
-                                        <div id='order_item_container' class="card-body">
-                                            {% include 'include/order_container.html' %}
-                                        </div>
+                            <div class="col-md-12 align-content-center">
+                                <div class="card">
+                                    <div id='order_item_container' class="card-body">
+                                        {% include 'include/order_container.html' %}
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
                 </div>
-                    <div>
-                        <span class="text-secondary-d1 text-105">Thank you for your business</span>
+
+            </div>
+            <div>
+                <span class="text-secondary-d1 text-105">Thank you for your business</span>
+            </div>
+        </div>
+
+    {% else %}
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="header">
+                        <h5 class="card-title">Products</h5>
+                        <input data-href='{% url "ajax-search" instance.id %}' type="text"
+                               class="form-control search_button" placeholder="Search">
                     </div>
+
+                    <div class="card-body" id="product_container">
+                        {% include 'include/product_container.html' %}
+                    </div>
+                </div>
             </div>
-            </div>
 
-        {% else %}
-            <div class="container-fluid">
-                <div class="row">
-                    {% if not instance.confirm %}
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="header">
-                                    <h5 class="card-title">Products</h5>
-                                    <input data-href='{% url "ajax-search" instance.id %}' type="text"
-                                           class="form-control search_button" placeholder="Search">
-                                </div>
+            <div class="col-md-6">
 
-                                <div class="card-body" id="product_container">
-                                    {% include 'include/product_container.html' %}
-                                </div>
-                            </div>
-                        </div>
-                    {% endif %}
-
-                    {% if not instance.confirm %}
-                        <div class="col-md-6">
-                    {% else %}
-
-                        <div class="col-md-9 align-content-center">
-                    {% endif %}
+                <div class="col-md-11 align-content-center">
                     <div class="card">
                         <div id='order_item_container' class="card-body">
                             {% include 'include/order_container.html' %}
                         </div>
                     </div>
 
-                    {% if not instance.confirm %}
-                        <div class="card">
-                            <div class="header">Edit</div>
-                            <div class="card-body">
-                                <form method="post" class="form">{% csrf_token %}
-                                    {{ form }}
-                                    <br>
+                    <div class="card">
+                        <div class="header">Edit</div>
+                        <div class="card-body">
+                            <form method="post" class="form">{% csrf_token %}
+                                {{ form }}
+                                <br>
+                                <button type="submit" class="btn btn-success">Save</button>
 
-                                    <button type="submit" class="btn btn-success">Save</button>
-
-                                </form>
-                            </div>
+                            </form>
                         </div>
-                    {% endif %}
-
-
-                    </div>
                     </div>
                 </div>
             </div>
-        {% endif %}
-    </div>
+        </div>
+    {% endif %}
+
+
+
 {% endblock %}
 
-{% block extra_js %}
+{% block script %}
     {% include 'include/ajax_calls.html' %}
 {% endblock %}

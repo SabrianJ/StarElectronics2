@@ -105,7 +105,6 @@
                 <nav class="sidebar-nav">
                     <ul id="sidebarnav" class="p-t-30">
                         <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link" href="{% url 'home' %}" aria-expanded="false"><i class="mdi mdi-view-dashboard"></i><span class="hide-menu">Dashboard</span></a></li>
-                        <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link" href="{% url 'control_orders' %}" aria-expanded="false"><i class="mdi mdi-border-inside"></i><span class="hide-menu">Order Control</span></a></li>
                         <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link" href="{% url 'list_orders' %}" aria-expanded="false"><i class="mdi mdi-border-inside"></i><span class="hide-menu">Order List</span></a></li>
                     </ul>
                 </nav>
@@ -171,11 +170,21 @@
                         </div>
                     </div>
                     <!-- Column -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card card-hover">
+                            <a href="">
+                            <div class="box bg-success text-center">
+                                <h1 class="font-light text-white"><i class="mdi mdi-chart-areaspline"></i></h1>
+                                <h6 class="text-white">Create Auto</h6>
+                            </div>
+                            </a>
+                        </div>
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
                          <div class="card">
-                           <div class="card-body">
+                            <div class="card-body">
                                 <h4 class="card-title">Latest Orders</h4>
 
                             </div>
@@ -184,7 +193,48 @@
                             </div>
                         </div>
                     </div>
+                    <div class="col-md-6">
+                         <!-- card -->
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title m-b-0">Status</h4>
+                                <div class="m-t-20">
+                                    <div class="d-flex no-block align-items-center">
+                                        <span>100% Total Incomes</span>
+                                        <div class="ml-auto">
+                                            <span>{{ total_sales }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-striped" role="progressbar" style="width: 100%" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="d-flex no-block align-items-center m-t-25">
+                                        <span>{{ paid_percent }}% Paid Value</span>
+                                        <div class="ml-auto">
+                                            <span>{{ paid_value }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: {{ paid_percent }}%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="d-flex no-block align-items-center m-t-25">
+                                        <span>{{ remain_percent }}% Dept</span>
+                                        <div class="ml-auto">
+                                            <span>{{ remaining }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-striped bg-info" role="progressbar" style="width: {{ remain_percent }}%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
+                    </div>
                 </div>
 
             </div>

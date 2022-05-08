@@ -64,4 +64,9 @@ class OrderCreateForm(BaseForm, forms.ModelForm):
 class OrderEditForm(BaseForm, forms.ModelForm):
     class Meta:
         model = CustomerOrder
-        fields = ['date', 'customer', 'status']
+        fields = ('date', 'customer', 'status')
+        widgets = {
+            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'customer': forms.Select(attrs={'class': 'form-control'}),
+            'status': forms.CheckboxInput(attrs={'class': 'form-control'})
+        }
