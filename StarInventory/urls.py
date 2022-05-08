@@ -3,7 +3,8 @@ from django.urls import path
 from . import views
 from .views import CreatePartView, UpdatePartView, list_parts, list_customers, CreateCustomerView, UpdateCustomerView, \
     list_suppliers, UpdateSupplierView, CreateSupplierView, list_orders, HomepageView, OrderListView, \
-    ajax_calculate_results_view
+    ajax_calculate_results_view, CreateOrderView, OrderUpdateView, done_order_view, delete_order, ajax_add_product, \
+    ajax_modify_order_item, order_action_view, ajax_search_parts
 
 urlpatterns = [
     path('', views.index, name='home'),
@@ -18,7 +19,16 @@ urlpatterns = [
     path('supplier/<int:pk>/update', UpdateSupplierView.as_view(), name="update_supplier"),
     path('customer/orders/control', HomepageView.as_view(), name="control_orders"),
     path('customer/orders/list', OrderListView.as_view(), name="list_orders"),
+    path('customer/orders/create', CreateOrderView.as_view(), name='create-order'),
+    path('customer/orders/update/<int:pk>/', OrderUpdateView.as_view(), name='update_order'),
+    path('customer/orders/done/<int:pk>/', done_order_view, name='done_order'),
+    path('customer/orders/delete/<int:pk>/', delete_order, name='delete_order'),
+    path('customer/orders/action/<int:pk>/<slug:action>/', order_action_view, name='order_action'),
+
 
     #  ajax_calls
-    path('ajax/calculate-results/', ajax_calculate_results_view, name='ajax_calculate_result'),
+    path('ajax/search-products/<int:pk>/', ajax_search_parts, name='ajax-search'),
+    path('ajax/add-product/<int:pk>/<int:dk>/', ajax_add_product, name='ajax_add'),
+    path('ajax/modify-product/<int:pk>/<slug:action>', ajax_modify_order_item, name='ajax_modify'),
+    path('ajax/calculate-results/', ajax_calculate_results_view, name='ajax_calculate_result')
 ]

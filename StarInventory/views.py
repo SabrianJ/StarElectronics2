@@ -1,16 +1,17 @@
+from django.contrib import messages
 from django.db.models import Sum
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, UpdateView, ListView
 from django_tables2 import RequestConfig
 
 from StarElectronics2.settings import CURRENCY
-from StarInventory.forms import PartForm, CustomerForm, SupplierForm
-from StarInventory.models import Part, Customer, Supplier, CustomerOrder
-from StarInventory.tables import OrderTable
+from StarInventory.forms import PartForm, CustomerForm, SupplierForm, OrderCreateForm, OrderEditForm
+from StarInventory.models import Part, Customer, Supplier, CustomerOrder, OrderItem
+from StarInventory.tables import OrderTable, PartTable, OrderItemTable
 
 
 def index(request):
@@ -127,12 +128,143 @@ def ajax_calculate_results_view(request):
     total_value, total_paid_value, remaining_value, data = 0, 0, 0, dict()
     if orders.exists():
         total_value = orders.aggregate(Sum('value'))['value__sum']
-        total_paid_value = orders.filter(status=True).aggregate(Sum('value'))['value__sum'] if\
+        total_paid_value = orders.filter(status=True).aggregate(Sum('value'))['value__sum'] if \
             orders.filter(status=True) else 0
         remaining_value = total_value - total_paid_value
-    total_value, total_paid_value, remaining_value = f'{CURRENCY} {total_value} ',\
+    total_value, total_paid_value, remaining_value = f'{CURRENCY} {total_value} ', \
                                                      f'{CURRENCY}{total_paid_value} {CURRENCY}', f'{CURRENCY}{remaining_value} '
     data['result'] = render_to_string(template_name='include/result_container.html',
                                       request=request,
                                       context=locals())
     return JsonResponse(data)
+
+
+class CreateOrderView(CreateView):
+    template_name = 'form.html'
+    form_class = OrderCreateForm
+    model = CustomerOrder
+
+    def get_success_url(self):
+        self.new_object.refresh_from_db()
+        return reverse('update_order', kwargs={'pk': self.new_object.id})
+
+    def form_valid(self, form):
+        object = form.save()
+        object.refresh_from_db()
+        self.new_object = object
+        return super().form_valid(form)
+
+
+class OrderUpdateView(UpdateView):
+    model = CustomerOrder
+    template_name = 'order_update.html'
+    form_class = OrderEditForm
+
+    def get_success_url(self):
+        return reverse('update_order', kwargs={'pk': self.object.id})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        instance = self.object
+        qs_p = Part.objects.all()[:12]
+        parts = PartTable(qs_p)
+        order_items = OrderItemTable(instance.order_items.all())
+        RequestConfig(self.request).configure(parts)
+        RequestConfig(self.request).configure(order_items)
+        context.update(locals())
+        return context
+
+
+def ajax_search_parts(request, pk):
+    instance = get_object_or_404(CustomerOrder, id=pk)
+    q = request.GET.get('q', None)
+    parts = Part.objects.filter(title__startswith=q) if q else Part.objects.all()
+    parts = parts[:12]
+    parts = PartTable(parts)
+    RequestConfig(request).configure(parts)
+    data = dict()
+    data['parts'] = render_to_string(template_name='include/product_container.html',
+                                        request=request,
+                                        context={
+                                            'products': parts,
+                                            'instance': instance
+                                        })
+    return JsonResponse(data)
+
+
+def order_action_view(request, pk, action):
+    instance = get_object_or_404(CustomerOrder, id=pk)
+    if action == 'is_paid':
+        instance.status = True
+        instance.save()
+    if action == 'delete':
+        instance.delete()
+    return redirect(reverse('home'))
+
+
+def ajax_add_product(request, pk, dk):
+    instance = get_object_or_404(CustomerOrder, id=pk)
+    part = get_object_or_404(Part, id=dk)
+    order_item, created = OrderItem.objects.get_or_create(customerOrder=instance, part=part)
+    if created:
+        order_item.quantity = 1
+        order_item.price = part.cost
+    else:
+        order_item.quantity += 1
+    order_item.save()
+    part.stock -= 1
+    part.save()
+    instance.refresh_from_db()
+    order_items = OrderItemTable(instance.order_items.all())
+    RequestConfig(request).configure(order_items)
+    data = dict()
+    data['result'] = render_to_string(template_name='include/order_container.html',
+                                      request=request,
+                                      context={'instance': instance,
+                                               'order_items': order_items
+                                               }
+                                    )
+    return JsonResponse(data)
+
+
+def ajax_modify_order_item(request, pk, action):
+    order_item = get_object_or_404(OrderItem, id=pk)
+    part = order_item.part
+    instance = order_item.customerOrder
+    if action == 'remove':
+        order_item.quantity -= 1
+        part.stock += 1
+        if order_item.quantity < 1: order_item.quantity = 1
+    if action == 'add':
+        order_item.quantity += 1
+        part.stock -= 1
+    part.save()
+    order_item.save()
+    if action == 'delete':
+        order_item.delete()
+    data = dict()
+    instance.refresh_from_db()
+    order_items = OrderItemTable(instance.order_items.all())
+    RequestConfig(request).configure(order_items)
+    data['result'] = render_to_string(template_name='include/order_container.html',
+                                      request=request,
+                                      context={
+                                          'instance': instance,
+                                          'order_items': order_items
+                                      }
+                                      )
+    return JsonResponse(data)
+
+
+def delete_order(request, pk):
+    instance = get_object_or_404(CustomerOrder, id=pk)
+    instance.delete()
+    messages.warning(request, 'The order is deleted!')
+    return redirect(reverse('home'))
+
+
+def done_order_view(request, pk):
+    instance = get_object_or_404(CustomerOrder, id=pk)
+    instance.status = True
+    instance.save()
+    return redirect(reverse('home'))
