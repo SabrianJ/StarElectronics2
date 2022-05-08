@@ -9,7 +9,7 @@
                     <div class="ml-auto text-right">
                         <nav aria-label="breadcrumb">
                             <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="{% url 'homepage' %}">Home</a></li>
+                                <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
                                 <li class="breadcrumb-item active" aria-current="page">List</li>
                             </ol>
                         </nav>
@@ -34,19 +34,6 @@
                         <div class="card-header"><h4>Filters</h4></div>
                         <div class="card-body">
                             <form class="form" method="get">
-                                <div class="form-group row">
-                                        <label for="search_name" class="col-sm-3 text-right control-label col-form-label">Search</label>
-                                        <div class="col-sm-9">
-                                            <input type="text"
-                                                   class="form-control"
-                                                   id="search_name"
-                                                   name="search_name"
-                                                   {% if request.GET.search_name %} value="{{ request.GET.search_name }}" {% else %}
-                                                    placeholder="Search Here" {% endif %}
-                                            >
-                                        </div>
-                                </div>
-                                <br><br>
                                 <label>Datepicker</label>
                                 <div class="input-group">
                                     <input
@@ -90,7 +77,6 @@
                      <div class="card">
                         <div class="card-header">
                             <button data-href="{% url 'ajax_calculate_result' %}" class="btn btn-info result_button">Order Analysis</button>
-                            <button data-href="{% url 'ajax_category_result' %}" class="btn btn-info result_button">Category Analysis</button>
                         </div>
                         <div class="card-body" id="result_container">
                         </div>

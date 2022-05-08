@@ -84,6 +84,17 @@ class CustomerOrder(models.Model):
         self.value = order_items.aggregate(Sum('total_price'))['total_price__sum'] if order_items.exists() else 0.00
         super().save(*args, **kwargs)
 
+    @staticmethod
+    def filter_data(request, queryset):
+        date_start = request.GET.get('date_start', None)
+        date_end = request.GET.get('date_end', None)
+        if date_end and date_start and date_end >= date_start:
+            date_start = datetime.datetime.strptime(date_start, '%m/%d/%Y').strftime('%Y-%m-%d')
+            date_end = datetime.datetime.strptime(date_end, '%m/%d/%Y').strftime('%Y-%m-%d')
+            print(date_start, date_end)
+            queryset = queryset.filter(date__range=[date_start, date_end])
+        return queryset
+
 
 class OrderItem(models.Model):
     part = models.ForeignKey(Part, on_delete=models.CASCADE)

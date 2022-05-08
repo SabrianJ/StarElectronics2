@@ -2,7 +2,8 @@ from django.urls import path
 
 from . import views
 from .views import CreatePartView, UpdatePartView, list_parts, list_customers, CreateCustomerView, UpdateCustomerView, \
-    list_suppliers, UpdateSupplierView, CreateSupplierView, list_orders, HomepageView
+    list_suppliers, UpdateSupplierView, CreateSupplierView, list_orders, HomepageView, OrderListView, \
+    ajax_calculate_results_view
 
 urlpatterns = [
     path('', views.index, name='home'),
@@ -15,5 +16,9 @@ urlpatterns = [
     path('suppliers', list_suppliers, name="list_suppliers"),
     path('supplier/create', CreateSupplierView.as_view(), name="create_supplier"),
     path('supplier/<int:pk>/update', UpdateSupplierView.as_view(), name="update_supplier"),
-    path('customer/orders', HomepageView.as_view(), name="list_orders")
+    path('customer/orders/control', HomepageView.as_view(), name="control_orders"),
+    path('customer/orders/list', OrderListView.as_view(), name="list_orders"),
+
+    #  ajax_calls
+    path('ajax/calculate-results/', ajax_calculate_results_view, name='ajax_calculate_result'),
 ]
