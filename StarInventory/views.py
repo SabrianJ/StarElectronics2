@@ -3,7 +3,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView
 
 from StarInventory.forms import PartForm, CustomerForm, SupplierForm
-from StarInventory.models import Part, Customer, Supplier
+from StarInventory.models import Part, Customer, Supplier, CustomerOrder
 
 
 def index(request):
@@ -14,6 +14,7 @@ def list_parts(request):
     parts = Part.objects.all()
     context = {"parts": parts}
     return render(request, "list_parts.html", context)
+
 
 class CreatePartView(CreateView):
     model = Part
@@ -44,6 +45,7 @@ class CreateCustomerView(CreateView):
 
     success_url = reverse_lazy("list_customers")
 
+
 class UpdateCustomerView(UpdateView):
     model = Customer
     form_class = CustomerForm
@@ -65,9 +67,16 @@ class CreateSupplierView(CreateView):
 
     success_url = reverse_lazy("list_suppliers")
 
+
 class UpdateSupplierView(UpdateView):
     model = Supplier
     form_class = SupplierForm
     template_name = "update_supplier.html"
 
     success_url = reverse_lazy("list_suppliers")
+
+
+def list_orders(request):
+    customer_orders = CustomerOrder.objects.all()
+    context = {"orders": customer_orders}
+    return render(request, "list_orders.html", context)
