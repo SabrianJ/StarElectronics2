@@ -5,17 +5,17 @@
 </div>
 <div class="col-md-12">
     <div class="pull-right m-t-30 text-right">
-        <p>Value: {{ instance.tag_value }}</p>
-        <p>Discount  : {{ instance.tag_discount }} </p>
         <hr>
         <h3><b>Total :</b> {{ instance.tag_final_value }}</h3>
     </div>
     <div class="clearfix"></div>
     <hr>
+    {% if not instance.confirm %}
     <div class="text-right">
         <a href="{% url 'done_order' instance.id %}" class="btn btn-success" type="submit"> Done </a>
         <a onclick="return confirm('Are you sure?')" href="{% url 'delete_order' instance.id %}" class="btn btn-danger">Delete</a>
     </div>
+    {% endif %}
 </div>
 <script>
     $('.edit_button').click(function (evt) {

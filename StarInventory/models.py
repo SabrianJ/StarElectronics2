@@ -75,6 +75,7 @@ class CustomerOrder(models.Model):
     date = models.DateField(_("Date"), default=datetime.date.today)
     part = models.ManyToManyField(Part, through="OrderItem")
     value = models.DecimalField(default=0.00, decimal_places=2, max_digits=20)
+    confirm = models.BooleanField(null=False, default=False)
 
     class Meta:
         ordering = ['-date']
@@ -89,8 +90,18 @@ class CustomerOrder(models.Model):
         return f'{CURRENCY} {self.value}'
 
     def save(self, *args, **kwargs):
-        order_items = self.order_items.all()
-        self.value = order_items.aggregate(Sum('total_price'))['total_price__sum'] if order_items.exists() else 0.00
+        if not self.confirm:
+            order_items = self.order_items.all()
+            self.value = order_items.aggregate(Sum('total_price'))['total_price__sum'] if order_items.exists() else 0.00
+            if self.status:
+                for order_item in order_items:
+                    part = order_item.part
+                    part.reserved_stock -= order_item.quantity
+                    part.stock -= order_item.quantity
+                    part.save()
+                self.confirm = True
+        else:
+            self.status = True
         super().save(*args, **kwargs)
 
     @staticmethod
@@ -117,9 +128,10 @@ class OrderItem(models.Model):
         return f"{self.part.name}"
 
     def save(self, *args, **kwargs):
-        self.total_price = Decimal(self.quantity) * Decimal(self.part.cost)
-        super().save(*args, **kwargs)
-        self.customerOrder.save()
+        if not self.customerOrder.confirm:
+            self.total_price = Decimal(self.quantity) * Decimal(self.part.cost)
+            super().save(*args, **kwargs)
+            self.customerOrder.save()
 
     class Meta:
         constraints = [
@@ -129,10 +141,11 @@ class OrderItem(models.Model):
 
 @receiver(post_delete, sender=OrderItem)
 def delete_order_item(sender, instance, **kwargs):
-    part = instance.part
-    part.stock += instance.quantity
-    part.save()
-    instance.customerOrder.save()
+    if not instance.customerOrder.confirm:
+        part = instance.part
+        part.reserved_stock -= instance.quantity
+        part.save()
+        instance.customerOrder.save()
 
 
 class SupplierOrder(models.Model):

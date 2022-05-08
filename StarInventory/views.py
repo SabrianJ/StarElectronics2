@@ -132,7 +132,7 @@ def ajax_calculate_results_view(request):
             orders.filter(status=True) else 0
         remaining_value = total_value - total_paid_value
     total_value, total_paid_value, remaining_value = f'{CURRENCY} {total_value} ', \
-                                                     f'{CURRENCY}{total_paid_value} {CURRENCY}', f'{CURRENCY}{remaining_value} '
+                                                     f'{CURRENCY}{total_paid_value}', f'{CURRENCY}{remaining_value} '
     data['result'] = render_to_string(template_name='include/result_container.html',
                                       request=request,
                                       context=locals())
@@ -178,7 +178,7 @@ class OrderUpdateView(UpdateView):
 def ajax_search_parts(request, pk):
     instance = get_object_or_404(CustomerOrder, id=pk)
     q = request.GET.get('q', None)
-    parts = Part.objects.filter(title__startswith=q) if q else Part.objects.all()
+    parts = Part.objects.filter(name__startswith=q)
     parts = parts[:12]
     parts = PartTable(parts)
     RequestConfig(request).configure(parts)
@@ -186,7 +186,7 @@ def ajax_search_parts(request, pk):
     data['parts'] = render_to_string(template_name='include/product_container.html',
                                         request=request,
                                         context={
-                                            'products': parts,
+                                            'parts': parts,
                                             'instance': instance
                                         })
     return JsonResponse(data)
@@ -198,7 +198,8 @@ def order_action_view(request, pk, action):
         instance.status = True
         instance.save()
     if action == 'delete':
-        instance.delete()
+        if not instance.confirm:
+            instance.delete()
     return redirect(reverse('home'))
 
 
@@ -206,14 +207,15 @@ def ajax_add_product(request, pk, dk):
     instance = get_object_or_404(CustomerOrder, id=pk)
     part = get_object_or_404(Part, id=dk)
     order_item, created = OrderItem.objects.get_or_create(customerOrder=instance, part=part)
-    if created:
-        order_item.quantity = 1
-        order_item.price = part.cost
-    else:
-        order_item.quantity += 1
-    order_item.save()
-    part.reserved_stock += 1
-    part.save()
+    if not instance.confirm:
+        if created:
+            order_item.quantity = 1
+            order_item.price = part.cost
+        else:
+            order_item.quantity += 1
+        order_item.save()
+        part.reserved_stock += 1
+        part.save()
     instance.refresh_from_db()
     order_items = OrderItemTable(instance.order_items.all())
     RequestConfig(request).configure(order_items)
@@ -231,17 +233,18 @@ def ajax_modify_order_item(request, pk, action):
     order_item = get_object_or_404(OrderItem, id=pk)
     part = order_item.part
     instance = order_item.customerOrder
-    if action == 'remove':
-        order_item.quantity -= 1
-        part.reserved_stock -= 1
-        if order_item.quantity < 1: order_item.quantity = 1
-    if action == 'add':
-        order_item.quantity += 1
-        part.reserved_stock += 1
-    part.save()
-    order_item.save()
-    if action == 'delete':
-        order_item.delete()
+    if not instance.confirm:
+        if action == 'remove':
+            order_item.quantity -= 1
+            part.reserved_stock -= 1
+            if order_item.quantity < 1: order_item.quantity = 1
+        if action == 'add':
+            order_item.quantity += 1
+            part.reserved_stock += 1
+        part.save()
+        order_item.save()
+        if action == 'delete':
+            order_item.delete()
     data = dict()
     instance.refresh_from_db()
     order_items = OrderItemTable(instance.order_items.all())
@@ -258,9 +261,12 @@ def ajax_modify_order_item(request, pk, action):
 
 def delete_order(request, pk):
     instance = get_object_or_404(CustomerOrder, id=pk)
-    instance.delete()
-    messages.warning(request, 'The order is deleted!')
-    return redirect(reverse('home'))
+    if not instance.confirm:
+        instance.delete()
+        messages.warning(request, 'The order is deleted!')
+        return redirect(reverse('home'))
+    else:
+        return redirect((reverse('control_orders')))
 
 
 def done_order_view(request, pk):

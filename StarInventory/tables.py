@@ -24,15 +24,17 @@ class PartTable(tables.Table):
     class Meta:
         model = Part
         template_name = 'django_tables2/bootstrap.html'
-        fields = ['name', 'stock', 'reserved_stock', 'cost']
+        fields = ['name', 'stock', 'reserved_stock','available_stock', 'cost']
 
 
 class OrderItemTable(tables.Table):
     total_price = tables.Column(orderable=False, verbose_name='Total Price')
     action = tables.TemplateColumn('''
+        {% if not instance.confirm %}
             <button data-href="{% url "ajax_modify" record.id "add" %}" class="btn btn-success edit_button"><i class="fa fa-arrow-up"></i></button>
             <button data-href="{% url "ajax_modify" record.id "remove" %}" class="btn btn-warning edit_button"><i class="fa fa-arrow-down"></i></button>
             <button data-href="{% url "ajax_modify" record.id "delete" %}" class="btn btn-danger edit_button"><i class="fa fa-trash"></i></button>
+        {% endif %}
     ''', orderable=False)
 
     class Meta:
