@@ -56,12 +56,17 @@ class Part(models.Model):
     reorder_level = models.IntegerField(null=False, blank=False, default=0)
     order_quantity = models.IntegerField(null=False, blank=False, default=20)
     reserved_stock = models.IntegerField(null=False, blank=False, default=0)
+    available_stock = models.IntegerField(null=False, blank=False, default=0)
     description = models.TextField(null=False, blank=False, max_length=100)
     manufacturer = models.CharField(null=False, blank=False, max_length=20)
     supplier = models.ForeignKey(Supplier, on_delete=models.DO_NOTHING)
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        self.available_stock = self.stock - self.reserved_stock
+        super().save(*args, **kwargs)
 
 
 class CustomerOrder(models.Model):

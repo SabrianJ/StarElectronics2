@@ -212,7 +212,7 @@ def ajax_add_product(request, pk, dk):
     else:
         order_item.quantity += 1
     order_item.save()
-    part.stock -= 1
+    part.reserved_stock += 1
     part.save()
     instance.refresh_from_db()
     order_items = OrderItemTable(instance.order_items.all())
@@ -233,11 +233,11 @@ def ajax_modify_order_item(request, pk, action):
     instance = order_item.customerOrder
     if action == 'remove':
         order_item.quantity -= 1
-        part.stock += 1
+        part.reserved_stock -= 1
         if order_item.quantity < 1: order_item.quantity = 1
     if action == 'add':
         order_item.quantity += 1
-        part.stock -= 1
+        part.reserved_stock += 1
     part.save()
     order_item.save()
     if action == 'delete':
