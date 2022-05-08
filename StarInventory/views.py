@@ -1,9 +1,12 @@
 from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView
+from django.utils.decorators import method_decorator
+from django.views.generic import CreateView, UpdateView, ListView
+from django_tables2 import RequestConfig
 
 from StarInventory.forms import PartForm, CustomerForm, SupplierForm
 from StarInventory.models import Part, Customer, Supplier, CustomerOrder
+from StarInventory.tables import OrderTable
 
 
 def index(request):
@@ -74,6 +77,20 @@ class UpdateSupplierView(UpdateView):
     template_name = "update_supplier.html"
 
     success_url = reverse_lazy("list_suppliers")
+
+
+class HomepageView(ListView):
+    template_name = 'index.html'
+    model = CustomerOrder
+    queryset = CustomerOrder.objects.all()[:10]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        orders = CustomerOrder.objects.all()
+        orders = OrderTable(orders)
+        RequestConfig(self.request).configure(orders)
+        context.update(locals())
+        return context
 
 
 def list_orders(request):

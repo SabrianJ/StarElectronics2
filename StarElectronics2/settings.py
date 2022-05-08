@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'StarInventory.apps.StarinventoryConfig'
+    'StarInventory.apps.StarinventoryConfig',
+    'django_tables2',
 ]
 
 MIDDLEWARE = [
@@ -140,3 +141,5 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]
+
+CURRENCY = '$'

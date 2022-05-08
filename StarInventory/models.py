@@ -1,6 +1,16 @@
+from decimal import Decimal
+
 from django.db import models
 import datetime
+
+from django.db.models import Sum
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
+
+from django.conf import settings
+
+CURRENCY = settings.CURRENCY
 
 
 # Create your models here.
@@ -41,7 +51,7 @@ class Supplier(models.Model):
 class Part(models.Model):
     name = models.CharField(null=False, blank=False, max_length=20)
     stock = models.IntegerField(null=False, blank=False, default=0)
-    cost = models.FloatField(null=False, blank=False)
+    cost = models.DecimalField(default=0.00, decimal_places=2, max_digits=20, null=False, blank=False)
     reorder_level = models.IntegerField(null=False, blank=False, default=0)
     order_quantity = models.IntegerField(null=False, blank=False, default=20)
     reserved_stock = models.IntegerField(null=False, blank=False, default=0)
@@ -58,23 +68,51 @@ class CustomerOrder(models.Model):
     status = models.BooleanField(null=False, default=False)
     date = models.DateField(_("Date"), default=datetime.date.today)
     part = models.ManyToManyField(Part, through="OrderItem")
+    value = models.DecimalField(default=0.00, decimal_places=2, max_digits=20)
+
+    class Meta:
+        ordering = ['-date']
 
     def __str__(self):
         return f"{self.id} - {self.customer.name} order"
 
+    def tag_final_value(self):
+        return f'{CURRENCY} {self.value}'
+
+    def save(self, *args, **kwargs):
+        order_items = self.order_items.all()
+        self.value = order_items.aggregate(Sum('total_price'))['total_price__sum'] if order_items.exists() else 0.00
+        super().save(*args, **kwargs)
+
 
 class OrderItem(models.Model):
     part = models.ForeignKey(Part, on_delete=models.CASCADE)
-    customerOrder = models.ForeignKey(CustomerOrder, on_delete=models.CASCADE)
+    customerOrder = models.ForeignKey(CustomerOrder, on_delete=models.CASCADE, related_name='order_items')
     quantity = models.IntegerField(null=False, blank=False, default=1)
+    total_price = models.DecimalField(default=0.00, decimal_places=2, max_digits=20)
+
+
 
     def __str__(self):
-        return f"{self.customerOrder.id} - {self.part.name}"
+        return f"{self.part.name}"
+
+    def save(self, *args, **kwargs):
+        self.total_price = Decimal(self.quantity) * Decimal(self.part.cost)
+        super().save(*args, **kwargs)
+        self.customerOrder.save()
 
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=('part', 'customerOrder'), name='once_per_customerOrder_part')
         ]
+
+
+@receiver(post_delete, sender=OrderItem)
+def delete_order_item(sender, instance, **kwargs):
+    part = instance.part
+    part.stock += instance.quantity
+    part.save()
+    instance.customerOrder.save()
 
 
 class SupplierOrder(models.Model):
