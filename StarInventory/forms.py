@@ -1,6 +1,6 @@
 from django import forms
 
-from StarInventory.models import Part, Customer, Supplier, CustomerOrder
+from StarInventory.models import Part, Customer, Supplier, CustomerOrder, SupplierOrder
 
 
 class PartForm(forms.ModelForm):
@@ -40,6 +40,18 @@ class SupplierForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Name'}),
             'phoneNumber': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone Number'}),
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
+        }
+
+
+class SupplierOrderForm(forms.ModelForm):
+    class Meta:
+        model = SupplierOrder
+        fields = ('part', 'supplier', 'quantity', 'date')
+        widgets = {
+            'part': forms.Select(attrs={'class': 'form-control'}),
+            'supplier': forms.Select(attrs={'class': 'form-control'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
+            'date': forms.DateInput(attrs={'class': 'form-control'})
         }
 
 

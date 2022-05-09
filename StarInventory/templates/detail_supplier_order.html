@@ -1,7 +1,7 @@
 {% extends 'base.html' %} {% load render_table from django_tables2 %}
 
 {% block title %}
-    Customer Order
+    Detail Supplier Order
 {% endblock %}
 
 {% block content %}
@@ -21,7 +21,6 @@
         </div>
     </div>
 
-    {% if instance.confirm %}
         <div class="container card">
             <div class="row mt-4">
                 <div class="col-12 col-lg-12">
@@ -29,7 +28,7 @@
                         <div class="col-12">
                             <div class="text-center text-150">
                                 <i class="fa fa-laptop-code fa-2x text-success-m2 mr-1"></i>
-                                <span class="text-default-d3">Star Electronics</span>
+                                <span class="text-default-d3">{{ instance.supplier.name }}</span>
                             </div>
                         </div>
                     </div>
@@ -38,26 +37,13 @@
                     <hr class="row brc-default-l1 mx-n1 mb-4"/>
 
                     <div class="row" style="margin-left: 10px">
-                        <div class="col-sm-6">
-                            <div>
-                                <span class="text-sm text-grey-m2 align-middle">To:</span>
-                                <span class="text-600 text-110 text-blue align-middle">{{ instance.customer.name }}</span>
-                            </div>
-                            <div class="text-grey-m2">
-                                <div class="my-1">
-                                    {{ instance.customer.email }}
-                                </div>
-                                <div class="my-1"><i class="fa fa-phone fa-flip-horizontal text-secondary"></i> <b
-                                        class="text-600">{{ instance.customer.phoneNumber }}</b></div>
-                            </div>
-                        </div>
                         <!-- /.col -->
 
-                        <div class="text-95 col-sm-6 align-self-start d-sm-flex justify-content-end">
+                        <div class="col-sm-6">
                             <hr class="d-sm-none"/>
                             <div class="text-grey-m2">
                                 <div class="mt-1 mb-2 text-secondary-m1 text-600 text-125">
-                                    Invoice
+                                    Supplier Order
                                 </div>
 
                                 <div class="my-2"><i class="fa fa-circle text-blue-m2 text-xs mr-1"></i> <span
@@ -81,7 +67,19 @@
                             <div class="col-md-12 align-content-center">
                                 <div class="card">
                                     <div id='order_item_container' class="card-body">
-                                        {% include 'include/order_container.html' %}
+                                        <h5 class="card-title">Order Detail</h5>
+                                        <div class="table-responsive">
+                                            {% render_table supplier_order %}
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="pull-right m-t-30 text-right">
+                                                <hr>
+                                                <h3><b>Total :</b> {{ instance.tag_final_value }}</h3>
+                                            </div>
+                                            <div class="clearfix"></div>
+                                            <hr>
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
@@ -95,51 +93,27 @@
             </div>
         </div>
 
-    {% else %}
-        <div class="row">
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="header">
-                        <h5 class="card-title">Products</h5>
-                        <input data-href='{% url "ajax-search" instance.id %}' type="text"
-                               class="form-control search_button" placeholder="Search">
-                    </div>
-
-                    <div class="card-body" id="product_container">
-                        {% include 'include/product_container.html' %}
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-
-                <div class="col-md-11 align-content-center">
-                    <div class="card">
-                        <div id='order_item_container' class="card-body">
-                            {% include 'include/order_container.html' %}
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="header">Edit</div>
-                        <div class="card-body">
-                            <form method="post" class="form">{% csrf_token %}
-                                {{ form }}
-                                <br>
-                                <button type="submit" class="btn btn-success">Save</button>
-
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    {% endif %}
-
 
 
 {% endblock %}
 
 {% block script %}
     {% include 'include/ajax_calls.html' %}
+
+    <script>
+        $('.edit_button').click(function (evt) {
+            evt.preventDefault();
+            const btn = $(this);
+            const url = btn.attr('data-href');
+            $.ajax({
+                method: 'GET',
+                url: url,
+                dataType: 'json',
+
+                success: function (data) {
+                    $('#order_item_container').html(data.result)
+                }
+            })
+        });
+    </script>
 {% endblock %}

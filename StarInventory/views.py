@@ -5,13 +5,13 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy, reverse
 from django.utils.decorators import method_decorator
-from django.views.generic import CreateView, UpdateView, ListView
+from django.views.generic import CreateView, UpdateView, ListView, DetailView
 from django_tables2 import RequestConfig
 
 from StarElectronics2.settings import CURRENCY
-from StarInventory.forms import PartForm, CustomerForm, SupplierForm, OrderCreateForm, OrderEditForm
-from StarInventory.models import Part, Customer, Supplier, CustomerOrder, OrderItem
-from StarInventory.tables import OrderTable, PartTable, OrderItemTable
+from StarInventory.forms import PartForm, CustomerForm, SupplierForm, OrderCreateForm, OrderEditForm, SupplierOrderForm
+from StarInventory.models import Part, Customer, Supplier, CustomerOrder, OrderItem, SupplierOrder
+from StarInventory.tables import OrderTable, PartTable, OrderItemTable, SupplierOrderTable
 
 
 def index(request):
@@ -119,6 +119,51 @@ def ajax_calculate_results_view(request):
     return JsonResponse(data)
 
 
+class CreateSupplierOrderView(CreateView):
+    model = SupplierOrder
+    template_name = "create_supplier_order.html"
+    form_class = SupplierOrderForm
+
+    success_url = reverse_lazy("list_supplier_order")
+
+
+class SupplierOrderListView(ListView):
+    template_name = 'list_supplier_order.html'
+    model = SupplierOrder
+    paginate_by = 50
+
+    def get_queryset(self):
+        qs = SupplierOrder.objects.all()
+        if self.request.GET:
+            qs = SupplierOrder.filter_data(self.request, qs)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        supplier_orders = SupplierOrderTable(self.object_list)
+        RequestConfig(self.request).configure(supplier_orders)
+        context.update(locals())
+        return context
+
+
+class SupplierOrderDetailView(DetailView):
+    template_name = 'detail_supplier_order.html'
+    model = SupplierOrder
+    paginate_by = 50
+
+    def get_success_url(self):
+        return reverse('list_supplier_order')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        instance = self.object
+        qs = self.get_queryset()
+        supplier_order = SupplierOrderTable(qs)
+        RequestConfig(self.request).configure(supplier_order)
+        context.update(locals())
+        return context
+
+
 class CreateOrderView(CreateView):
     template_name = 'form.html'
     form_class = OrderCreateForm
@@ -164,11 +209,11 @@ def ajax_search_parts(request, pk):
     RequestConfig(request).configure(parts)
     data = dict()
     data['parts'] = render_to_string(template_name='include/product_container.html',
-                                        request=request,
-                                        context={
-                                            'parts': parts,
-                                            'instance': instance
-                                        })
+                                     request=request,
+                                     context={
+                                         'parts': parts,
+                                         'instance': instance
+                                     })
     return JsonResponse(data)
 
 
@@ -205,7 +250,7 @@ def ajax_add_product(request, pk, dk):
                                       context={'instance': instance,
                                                'order_items': order_items
                                                }
-                                    )
+                                      )
     return JsonResponse(data)
 
 
@@ -247,8 +292,3 @@ def delete_order(request, pk):
         return redirect(reverse('home'))
     else:
         return redirect((reverse('control_orders')))
-
-
-def done_order_view(request, pk):
-    instance = get_object_or_404(CustomerOrder, id=pk)
-    return redirect(reverse('home'))

@@ -1,6 +1,6 @@
 import django_tables2 as tables
 
-from .models import OrderItem, CustomerOrder, Part
+from .models import OrderItem, CustomerOrder, Part, SupplierOrder
 
 
 class OrderTable(tables.Table):
@@ -43,3 +43,15 @@ class OrderItemTable(tables.Table):
         model = OrderItem
         template_name = 'django_tables2/bootstrap.html'
         fields = ['part', 'quantity', 'unit_price', 'total_price']
+
+
+class SupplierOrderTable(tables.Table):
+    date = tables.DateColumn(format="d/m/Y")
+    unit_price = tables.Column(accessor='part.cost', verbose_name='@')
+    action = tables.TemplateColumn(
+        '<a href="{{ record.get_detail_url }}" class="btn btn-info"><i class="fa fa-edit"></i></a>', orderable=False)
+
+    class Meta:
+        model = SupplierOrder
+        template_name = 'django_tables2/bootstrap.html'
+        fields = ['date', 'id', 'part', 'supplier', 'quantity', 'unit_price', 'total_price']

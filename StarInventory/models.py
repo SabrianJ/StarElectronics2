@@ -120,8 +120,6 @@ class OrderItem(models.Model):
     quantity = models.IntegerField(null=False, blank=False, default=1)
     total_price = models.DecimalField(default=0.00, decimal_places=2, max_digits=20)
 
-
-
     def __str__(self):
         return f"{self.part.name}"
 
@@ -151,3 +149,29 @@ class SupplierOrder(models.Model):
     supplier = models.ForeignKey(Supplier, on_delete=models.DO_NOTHING)
     quantity = models.IntegerField(null=False, blank=False, default=1)
     date = models.DateField(_("Date"), default=datetime.date.today)
+    total_price = models.DecimalField(default=0.00, decimal_places=2, max_digits=20)
+
+    def __str__(self):
+        return f"{self.supplier.name} - {self.id}"
+
+    def tag_final_value(self):
+        return f'{CURRENCY} {self.total_price}'
+
+    def get_detail_url(self):
+        return reverse('detail_supplier_order', kwargs={'pk': self.id})
+
+    def save(self, *args, **kwargs):
+        part = self.part
+        part.stock += self.quantity
+        part.save()
+        self.total_price = self.part.cost * self.quantity
+        super().save(*args, **kwargs)
+
+    @staticmethod
+    def filter_data(request, queryset):
+        date_start = request.GET.get('date_start', None)
+        date_end = request.GET.get('date_end', None)
+        if date_end and date_start and date_end >= date_start:
+            print(date_start, date_end)
+            queryset = queryset.filter(date__range=[date_start, date_end])
+        return queryset

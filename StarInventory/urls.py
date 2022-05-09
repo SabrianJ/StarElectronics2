@@ -3,8 +3,9 @@ from django.urls import path
 from . import views
 from .views import CreatePartView, UpdatePartView, list_parts, list_customers, CreateCustomerView, UpdateCustomerView, \
     list_suppliers, UpdateSupplierView, CreateSupplierView, OrderListView, \
-    ajax_calculate_results_view, CreateOrderView, OrderUpdateView, done_order_view, delete_order, ajax_add_product, \
-    ajax_modify_order_item, order_action_view, ajax_search_parts
+    ajax_calculate_results_view, CreateOrderView, OrderUpdateView, delete_order, ajax_add_product, \
+    ajax_modify_order_item, order_action_view, ajax_search_parts, CreateSupplierOrderView, SupplierOrderDetailView, \
+    SupplierOrderListView
 
 urlpatterns = [
     path('', views.index, name='home'),
@@ -17,10 +18,12 @@ urlpatterns = [
     path('suppliers', list_suppliers, name="list_suppliers"),
     path('supplier/create', CreateSupplierView.as_view(), name="create_supplier"),
     path('supplier/<int:pk>/update', UpdateSupplierView.as_view(), name="update_supplier"),
+    path('supplier/order/create', CreateSupplierOrderView.as_view(), name="create_supplier_order"),
+    path('supplier/order/list/', SupplierOrderListView.as_view(), name="list_supplier_order"),
+    path('supplier/order/detail/<int:pk>', SupplierOrderDetailView.as_view(), name="detail_supplier_order"),
     path('customer/orders/list', OrderListView.as_view(), name="list_orders"),
     path('customer/orders/create', CreateOrderView.as_view(), name='create-order'),
     path('customer/orders/update/<int:pk>/', OrderUpdateView.as_view(), name='update_order'),
-    path('customer/orders/done/<int:pk>/', done_order_view, name='done_order'),
     path('customer/orders/delete/<int:pk>/', delete_order, name='delete_order'),
     path('customer/orders/action/<int:pk>/<slug:action>/', order_action_view, name='order_action'),
 

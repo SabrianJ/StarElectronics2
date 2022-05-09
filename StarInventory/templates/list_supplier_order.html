@@ -2,7 +2,7 @@
 {% load static %} {% load render_table from django_tables2 %}
 
 {% block title %}
-    Customer Order
+    List Supplier Order
 {% endblock %}
 
 {% block content %}
@@ -10,12 +10,12 @@
         <div class="page-breadcrumb">
             <div class="row">
                 <div class="col-12 d-flex no-block align-items-center">
-                    <h4 class="page-title">Order List</h4>
+                    <h4 class="page-title">Supplier Order List</h4>
                     <div class="ml-auto text-right">
                         <nav aria-label="breadcrumb">
                             <ol class="breadcrumb">
                                 <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">List</li>
+                                <li class="breadcrumb-item active" aria-current="page"> Supplier Order List</li>
                             </ol>
                         </nav>
                     </div>
@@ -27,10 +27,10 @@
                 <div class="col-md-8">
                     <div class="card">
                         <div class="card-body">
-                            <h4 class="card-title">Latest Orders</h4>
+                            <h4 class="card-title">Latest Supplier Orders</h4>
                         </div>
                         <div class="comment-widgets scrollable">
-                            {% render_table orders %}
+                            {% render_table supplier_orders %}
                         </div>
                     </div>
                 </div>
@@ -69,16 +69,6 @@
                                 <button type="submit" class="btn btn-success">Submit</button>
                                 <a href="{{ request.path }}" class="btn btn-warning">Reset</a>
                             </form>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header">
-                            <button data-href="{% url 'ajax_calculate_result' %}" class="btn btn-info result_button">
-                                Order Analysis
-                            </button>
-                        </div>
-                        <div class="card-body" id="result_container">
                         </div>
                     </div>
                 </div>
