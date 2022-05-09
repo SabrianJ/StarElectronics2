@@ -29,7 +29,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     '0.0.0.0'
-    'https://star-electronics.herokuapp.com/',
+    'star-electronics.herokuapp.com/',
     '127.0.0.1'
 ]
 
