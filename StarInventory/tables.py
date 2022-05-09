@@ -55,3 +55,13 @@ class SupplierOrderTable(tables.Table):
         model = SupplierOrder
         template_name = 'django_tables2/bootstrap.html'
         fields = ['date', 'id', 'part', 'supplier', 'quantity', 'unit_price', 'total_price']
+
+
+class SupplierOrderDetailTable(tables.Table):
+    date = tables.DateColumn(format="d/m/Y")
+    unit_price = tables.Column(accessor='part.cost', verbose_name='@')
+
+    class Meta:
+        model = SupplierOrder
+        template_name = 'django_tables2/bootstrap.html'
+        fields = ['date', 'id', 'part', 'supplier', 'quantity', 'unit_price', 'total_price']

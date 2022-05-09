@@ -11,7 +11,7 @@ from django_tables2 import RequestConfig
 from StarElectronics2.settings import CURRENCY
 from StarInventory.forms import PartForm, CustomerForm, SupplierForm, OrderCreateForm, OrderEditForm, SupplierOrderForm
 from StarInventory.models import Part, Customer, Supplier, CustomerOrder, OrderItem, SupplierOrder
-from StarInventory.tables import OrderTable, PartTable, OrderItemTable, SupplierOrderTable
+from StarInventory.tables import OrderTable, PartTable, OrderItemTable, SupplierOrderTable, SupplierOrderDetailTable
 
 
 def index(request):
@@ -157,8 +157,8 @@ class SupplierOrderDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         instance = self.object
-        qs = self.get_queryset()
-        supplier_order = SupplierOrderTable(qs)
+        qs = SupplierOrder.objects.filter(id=instance.id)
+        supplier_order = SupplierOrderDetailTable(qs)
         RequestConfig(self.request).configure(supplier_order)
         context.update(locals())
         return context
@@ -186,6 +186,14 @@ class OrderUpdateView(UpdateView):
     form_class = OrderEditForm
 
     def get_success_url(self):
+        instance = self.object
+        order_item = OrderItem.objects.filter(customerOrder=instance)
+        for item in order_item:
+            if item.part.stock <= item.part.reorder_level:
+                supplier_order = SupplierOrder.objects.create(part=item.part,
+                                                              supplier=item.part.supplier,
+                                                              quantity=item.part.order_quantity)
+                supplier_order.save()
         return reverse('update_order', kwargs={'pk': self.object.id})
 
     def get_context_data(self, **kwargs):
@@ -231,16 +239,17 @@ def order_action_view(request, pk, action):
 def ajax_add_product(request, pk, dk):
     instance = get_object_or_404(CustomerOrder, id=pk)
     part = get_object_or_404(Part, id=dk)
-    order_item, created = OrderItem.objects.get_or_create(customerOrder=instance, part=part)
-    if not instance.confirm:
-        if created:
-            order_item.quantity = 1
-            order_item.price = part.cost
-        else:
-            order_item.quantity += 1
-        order_item.save()
-        part.reserved_stock += 1
-        part.save()
+    if not part.available_stock == 0:
+        order_item, created = OrderItem.objects.get_or_create(customerOrder=instance, part=part)
+        if not instance.confirm:
+            if created:
+                order_item.quantity = 1
+                order_item.price = part.cost
+            else:
+                order_item.quantity += 1
+            order_item.save()
+            part.reserved_stock += 1
+            part.save()
     instance.refresh_from_db()
     order_items = OrderItemTable(instance.order_items.all())
     RequestConfig(request).configure(order_items)
@@ -262,12 +271,17 @@ def ajax_modify_order_item(request, pk, action):
         if action == 'remove':
             order_item.quantity -= 1
             part.reserved_stock -= 1
-            if order_item.quantity < 1: order_item.quantity = 1
-        if action == 'add':
-            order_item.quantity += 1
-            part.reserved_stock += 1
+            if order_item.quantity < 1:
+                order_item.quantity = 1
+                part.reserved_stock += 1
+        if not part.available_stock == 0:
+            if action == 'add':
+                order_item.quantity += 1
+                part.reserved_stock += 1
+
         part.save()
         order_item.save()
+
         if action == 'delete':
             order_item.delete()
     data = dict()
