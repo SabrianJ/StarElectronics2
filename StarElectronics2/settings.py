@@ -145,4 +145,4 @@ STATICFILES_FINDERS = [
 
 CURRENCY = '$'
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
