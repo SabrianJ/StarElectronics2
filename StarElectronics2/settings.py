@@ -27,7 +27,11 @@ SECRET_KEY = 'django-insecure-8j+i%^h08m==&c_uwi6$#rr=9n2&-2hj(4=q)+)he7n!lp=fey
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '0.0.0.0'
+    'https://star-electronics.herokuapp.com/',
+    '127.0.0.1'
+]
 
 
 # Application definition
@@ -145,3 +149,4 @@ STATICFILES_FINDERS = [
 ]
 
 CURRENCY = '$'
+
