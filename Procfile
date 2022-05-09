@@ -1,1 +1,1 @@
-web: gunicorn myproject.wsgi
+web: gunicorn StarElectronics2.wsgi
