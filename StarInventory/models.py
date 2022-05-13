@@ -50,6 +50,7 @@ class Supplier(models.Model):
 
 
 class Part(models.Model):
+    manufacturer_number = models.CharField(null=False, blank=False, max_length=20, unique=True)
     name = models.CharField(null=False, blank=False, max_length=20)
     stock = models.IntegerField(null=False, blank=False, default=0)
     cost = models.DecimalField(default=0.00, decimal_places=2, max_digits=20, null=False, blank=False)

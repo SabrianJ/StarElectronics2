@@ -7,9 +7,10 @@ class PartForm(forms.ModelForm):
     class Meta:
         model = Part
         fields = (
-            'name', 'stock', 'cost', 'reorder_level', 'order_quantity', 'description', 'manufacturer',
+            'manufacturer_number', 'name', 'stock', 'cost', 'reorder_level', 'order_quantity', 'description', 'manufacturer',
             'supplier')
         widgets = {
+            'manufacturer_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Manufacture number'}),
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Name'}),
             'stock': forms.NumberInput(attrs={'class': 'form-control'}),
             'cost': forms.NumberInput(attrs={'class': 'form-control'}),

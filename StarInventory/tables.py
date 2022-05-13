@@ -48,20 +48,22 @@ class OrderItemTable(tables.Table):
 class SupplierOrderTable(tables.Table):
     date = tables.DateColumn(format="d/m/Y")
     unit_price = tables.Column(accessor='part.cost', verbose_name='@')
+    manufacturer_number = tables.Column(accessor='part.manufacturer_number', verbose_name="Manufacture No")
     action = tables.TemplateColumn(
         '<a href="{{ record.get_detail_url }}" class="btn btn-info"><i class="fa fa-edit"></i></a>', orderable=False)
 
     class Meta:
         model = SupplierOrder
         template_name = 'django_tables2/bootstrap.html'
-        fields = ['date', 'id', 'part', 'supplier', 'quantity', 'unit_price', 'total_price']
+        fields = ['date', 'manufacturer_number', 'part', 'supplier', 'quantity', 'unit_price', 'total_price']
 
 
 class SupplierOrderDetailTable(tables.Table):
     date = tables.DateColumn(format="d/m/Y")
     unit_price = tables.Column(accessor='part.cost', verbose_name='@')
+    manufacturer_number = tables.Column(accessor='part.manufacturer_number', verbose_name="Manufacture No")
 
     class Meta:
         model = SupplierOrder
         template_name = 'django_tables2/bootstrap.html'
-        fields = ['date', 'id', 'part', 'supplier', 'quantity', 'unit_price', 'total_price']
+        fields = ['date', 'manufacturer_number', 'part', 'supplier', 'quantity', 'unit_price', 'total_price']
