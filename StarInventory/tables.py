@@ -4,7 +4,7 @@ from .models import OrderItem, CustomerOrder, Part, SupplierOrder
 
 
 class OrderTable(tables.Table):
-    tag_final_value = tables.Column(orderable=False, verbose_name='Value')
+    tag_final_value = tables.Column(orderable=True, verbose_name='Value')
     date = tables.DateColumn(format="d/m/Y")
     action = tables.TemplateColumn(
         '<a href="{{ record.get_edit_url }}" class="btn btn-info"><i class="fa fa-edit"></i></a>', orderable=False)
@@ -16,7 +16,7 @@ class OrderTable(tables.Table):
 
 
 class PartTable(tables.Table):
-    cost = tables.Column(orderable=False, verbose_name='Cost')
+    cost = tables.Column(orderable=True, verbose_name='Cost')
     action = tables.TemplateColumn(
         '<button class="btn btn-info add_button" data-href="{% url "ajax_add" instance.id record.id %}">Add!</a>',
         orderable=False
@@ -29,8 +29,8 @@ class PartTable(tables.Table):
 
 
 class PartTableSupplier(tables.Table):
-    cost = tables.Column(orderable=False, verbose_name='Cost')
-    item_in_order = tables.Column(orderable=False, verbose_name="In Order")
+    cost = tables.Column(orderable=True, verbose_name='Cost')
+    item_in_order = tables.Column(orderable=True, verbose_name="In Order")
     action = tables.TemplateColumn(
         '<button class="btn btn-info add_button_supplier" data-href="{% url "ajax_add_supplier" instance.id record.id %}">Add!</a>',
         orderable=False
