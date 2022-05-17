@@ -96,12 +96,12 @@
 
     {% else %}
         <div class="row">
-            <div class="col-lg-6">
+            <div class="col-lg-5">
                 <div class="card">
                     <div class="header">
                         <h5 class="card-title">Products</h5>
-                        <input data-href='{% url "ajax-search" instance.id %}' type="text"
-                               class="form-control search_button" placeholder="Search">
+                        <input data-href='{% url "ajax-search-supplier" instance.id %}' type="text"
+                               class="form-control search_button_supplier" placeholder="Search">
                     </div>
 
                     <div class="card-body" id="supplier_product_container">
@@ -110,7 +110,7 @@
                 </div>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-lg-7">
 
                 <div class="col-md-11 align-content-center">
                     <div class="card">

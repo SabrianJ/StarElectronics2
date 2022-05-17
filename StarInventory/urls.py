@@ -6,7 +6,7 @@ from .views import CreatePartView, UpdatePartView, list_parts, list_customers, C
     ajax_calculate_results_view, CreateOrderView, OrderUpdateView, delete_order, ajax_add_product, \
     ajax_modify_order_item, order_action_view, ajax_search_parts, CreateSupplierOrderView, SupplierOrderDetailView, \
     SupplierOrderListView, SupplierOrderUpdateView, ajax_add_product_supplier, ajax_modify_supplier_order_item, \
-    delete_supplier_order
+    delete_supplier_order, ajax_search_parts_supplier
 
 urlpatterns = [
     path('', views.index, name='home'),
@@ -33,6 +33,7 @@ urlpatterns = [
 
     #  ajax_calls
     path('ajax/search-products/<int:pk>/', ajax_search_parts, name='ajax-search'),
+    path('ajax/search-products-supplier/<int:pk>/', ajax_search_parts_supplier, name='ajax-search-supplier'),
     path('ajax/add-product/<int:pk>/<int:dk>/', ajax_add_product, name='ajax_add'),
     path('ajax/modify-product/<int:pk>/<slug:action>', ajax_modify_order_item, name='ajax_modify'),
     path('ajax/calculate-results/', ajax_calculate_results_view, name='ajax_calculate_result'),

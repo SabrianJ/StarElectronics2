@@ -255,6 +255,22 @@ def ajax_search_parts(request, pk):
                                      })
     return JsonResponse(data)
 
+def ajax_search_parts_supplier(request, pk):
+    instance = get_object_or_404(SupplierOrder, id=pk)
+    q = request.GET.get('q', None)
+    parts = Part.objects.filter(name__startswith=q)
+    parts = parts[:12]
+    parts = PartTableSupplier(parts)
+    RequestConfig(request).configure(parts)
+    data = dict()
+    data['parts'] = render_to_string(template_name='include/supplier_product_container.html',
+                                     request=request,
+                                     context={
+                                         'parts': parts,
+                                         'instance': instance
+                                     })
+    return JsonResponse(data)
+
 
 def order_action_view(request, pk, action):
     instance = get_object_or_404(CustomerOrder, id=pk)
@@ -282,6 +298,7 @@ def ajax_add_product(request, pk, dk):
             part.reserved_stock += 1
             part.save()
     instance.refresh_from_db()
+    all_parts = PartTable(Part.objects.all())
     order_items = OrderItemTable(instance.order_items.all())
     RequestConfig(request).configure(order_items)
     data = dict()
@@ -289,6 +306,12 @@ def ajax_add_product(request, pk, dk):
                                       request=request,
                                       context={'instance': instance,
                                                'order_items': order_items
+                                               }
+                                      )
+    data['product'] = render_to_string(template_name='include/product_container.html',
+                                      request=request,
+                                      context={'instance': instance,
+                                               'parts': all_parts,
                                                }
                                       )
     return JsonResponse(data)
@@ -311,6 +334,7 @@ def ajax_add_product_supplier(request, pk, dk):
 
     instance.refresh_from_db()
     supplier_order_items = SupplierOrderItemTable(instance.supplier_order_items.all())
+    all_parts = PartTableSupplier(Part.objects.all())
     RequestConfig(request).configure(supplier_order_items)
     data = dict()
     data['result'] = render_to_string(template_name='include/supplier_order_container.html',
@@ -319,6 +343,12 @@ def ajax_add_product_supplier(request, pk, dk):
                                                'supplier_order_items': supplier_order_items
                                                }
                                       )
+    data['product'] = render_to_string(template_name='include/supplier_product_container.html',
+                                       request=request,
+                                       context={'instance': instance,
+                                                'parts': all_parts,
+                                                }
+                                       )
     return JsonResponse(data)
 
 
@@ -345,6 +375,7 @@ def ajax_modify_order_item(request, pk, action):
             order_item.delete()
     data = dict()
     instance.refresh_from_db()
+    all_parts = PartTable(Part.objects.all())
     order_items = OrderItemTable(instance.order_items.all())
     RequestConfig(request).configure(order_items)
     data['result'] = render_to_string(template_name='include/order_container.html',
@@ -354,6 +385,12 @@ def ajax_modify_order_item(request, pk, action):
                                           'order_items': order_items
                                       }
                                       )
+    data['product'] = render_to_string(template_name='include/product_container.html',
+                                       request=request,
+                                       context={'instance': instance,
+                                                'parts': all_parts,
+                                                }
+                                       )
     return JsonResponse(data)
 
 
@@ -380,6 +417,7 @@ def ajax_modify_supplier_order_item(request, pk, action):
             supplier_order_item.delete()
     data = dict()
     instance.refresh_from_db()
+    all_parts = PartTableSupplier(Part.objects.all())
     supplier_order_items = SupplierOrderItemTable(instance.supplier_order_items.all())
     RequestConfig(request).configure(supplier_order_items)
     data['result'] = render_to_string(template_name='include/supplier_order_container.html',
@@ -389,6 +427,12 @@ def ajax_modify_supplier_order_item(request, pk, action):
                                           'supplier_order_items': supplier_order_items
                                       }
                                       )
+    data['product'] = render_to_string(template_name='include/supplier_product_container.html',
+                                       request=request,
+                                       context={'instance': instance,
+                                                'parts': all_parts,
+                                                }
+                                       )
     return JsonResponse(data)
 
 

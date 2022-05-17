@@ -60,6 +60,7 @@ class OrderItemTable(tables.Table):
 class SupplierOrderItemTable(tables.Table):
     total_price = tables.Column(orderable=False, verbose_name='Total Price')
     unit_price = tables.Column(accessor='part.cost', verbose_name='@')
+    manufacture_number = tables.Column(accessor='part.manufacturer_number', verbose_name="Manufacture No")
     action = tables.TemplateColumn('''
         {% if not instance.confirm %}
             <button data-href="{% url "ajax_modify_supplier" record.id "add" %}" class="btn btn-success edit_button_supplier"><i class="fa fa-arrow-up"></i></button>
@@ -71,7 +72,7 @@ class SupplierOrderItemTable(tables.Table):
     class Meta:
         model = OrderItem
         template_name = 'django_tables2/bootstrap.html'
-        fields = ['part', 'quantity', 'unit_price', 'total_price']
+        fields = ['part','manufacture_number', 'quantity', 'unit_price', 'total_price']
 
 
 class SupplierOrderTable(tables.Table):

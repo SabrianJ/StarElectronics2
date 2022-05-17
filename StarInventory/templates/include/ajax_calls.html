@@ -8,6 +8,7 @@
             dataType: 'json',
             url: url,
             success: function (data) {
+                $('#product_container').html(data.product)
                 $('#order_item_container').html(data.result)
             }
         })
@@ -23,6 +24,7 @@
             dataType: 'json',
 
             success: function (data) {
+                $('#product_container').html(data.product)
                 $('#order_item_container').html(data.result)
             }
         })
@@ -44,6 +46,22 @@
         })
     })
 
+    $('.search_button_supplier').keyup(function (evt) {
+        evt.preventDefault();
+        const btn = $(this);
+        const val = btn.val();
+        const url = btn.attr('data-href');
+        $.ajax({
+            method: 'GET',
+            dataType: 'json',
+            url: url + '?q=' + val,
+
+            success: function (data) {
+                $('#supplier_product_container').html(data.parts)
+            }
+        })
+    })
+
 
     $('.add_button_supplier').click(function (evt) {
         evt.preventDefault();
@@ -54,6 +72,7 @@
             dataType: 'json',
             url: url,
             success: function (data) {
+                $('#supplier_product_container').html(data.product)
                 $('#supplier_order_item_container').html(data.result)
             }
         })
@@ -70,6 +89,7 @@
             dataType: 'json',
 
             success: function (data) {
+                $('#supplier_product_container').html(data.product)
                 $('#supplier_order_item_container').html(data.result)
             }
         })

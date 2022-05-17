@@ -14,6 +14,7 @@
             dataType: 'json',
             url: url,
             success : function (data) {
+                $('#product_container').html(data.product)
                 $('#order_item_container').html(data.result)
             }
         })
