@@ -6,10 +6,12 @@ from .views import CreatePartView, UpdatePartView, list_parts, list_customers, C
     ajax_calculate_results_view, CreateOrderView, OrderUpdateView, delete_order, ajax_add_product, \
     ajax_modify_order_item, order_action_view, ajax_search_parts, CreateSupplierOrderView, SupplierOrderDetailView, \
     SupplierOrderListView, SupplierOrderUpdateView, ajax_add_product_supplier, ajax_modify_supplier_order_item, \
-    delete_supplier_order, ajax_search_parts_supplier
+    delete_supplier_order, ajax_search_parts_supplier, login_view, logout_view
 
 urlpatterns = [
     path('', views.index, name='home'),
+    path("login", login_view, name="login"),
+    path("logout", logout_view, name="logout"),
     path('part/create', CreatePartView.as_view(), name="create_part"),
     path('part/<int:pk>/update', UpdatePartView.as_view(), name="update_part"),
     path('parts', list_parts, name="list_parts"),

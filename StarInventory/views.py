@@ -1,8 +1,11 @@
 from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy, reverse
 from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, UpdateView, ListView, DetailView
@@ -16,80 +19,118 @@ from StarInventory.tables import OrderTable, PartTable, OrderItemTable, Supplier
     SupplierOrderItemTable, PartTableSupplier
 
 
+@login_required(login_url='/login')
 def index(request):
     return render(request, "welcome.html", {"title": "Welcome Page", "content": "My content"})
 
 
+def login_view(request):
+    if request.POST:
+        print("logging in")
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('home')
+        else:
+            return HttpResponse("<h1>Invalid Credentials, Please try again </h1>")
+    else:
+        return render(request, "login.html")
+
+
+def logout_view(request):
+    logout(request)
+    return redirect("login")
+
+
+@login_required(login_url='/login')
 def list_parts(request):
     parts = Part.objects.all()
     context = {"parts": parts}
     return render(request, "list_parts.html", context)
 
 
-class CreatePartView(CreateView):
+class CreatePartView(LoginRequiredMixin,CreateView):
     model = Part
     form_class = PartForm
     template_name = "create_part.html"
 
+    login_url = '/login'
+
     success_url = reverse_lazy("list_parts")
 
 
-class UpdatePartView(UpdateView):
+class UpdatePartView(LoginRequiredMixin, UpdateView):
     model = Part
     form_class = PartForm
     template_name = "update_part.html"
 
+    login_url = '/login'
+
     success_url = reverse_lazy("list_parts")
 
 
+@login_required(login_url='/login')
 def list_customers(request):
     customers = Customer.objects.all()
     context = {"customers": customers}
     return render(request, "list_customers.html", context)
 
 
-class CreateCustomerView(CreateView):
+class CreateCustomerView(LoginRequiredMixin, CreateView):
     model = Customer
     form_class = CustomerForm
     template_name = "create_customer.html"
 
+    login_url = '/login'
+
     success_url = reverse_lazy("list_customers")
 
 
-class UpdateCustomerView(UpdateView):
+class UpdateCustomerView(LoginRequiredMixin, UpdateView):
     model = Customer
     form_class = CustomerForm
     template_name = "update_customer.html"
 
+    login_url = '/login'
+
     success_url = reverse_lazy("list_customers")
 
 
+@login_required(login_url='/login')
 def list_suppliers(request):
     suppliers = Supplier.objects.all()
     context = {"suppliers": suppliers}
     return render(request, "list_suppliers.html", context)
 
 
-class CreateSupplierView(CreateView):
+class CreateSupplierView(LoginRequiredMixin, CreateView):
     model = Supplier
     form_class = SupplierForm
     template_name = "create_supplier.html"
 
+    login_url = '/login'
+
     success_url = reverse_lazy("list_suppliers")
 
 
-class UpdateSupplierView(UpdateView):
+class UpdateSupplierView(LoginRequiredMixin, UpdateView):
     model = Supplier
     form_class = SupplierForm
     template_name = "update_supplier.html"
 
+    login_url = '/login'
+
     success_url = reverse_lazy("list_suppliers")
 
 
-class OrderListView(ListView):
+class OrderListView(LoginRequiredMixin, ListView):
     template_name = 'list.html'
     model = CustomerOrder
     paginate_by = 50
+
+    login_url = '/login'
 
     def get_queryset(self):
         qs = CustomerOrder.objects.all()
@@ -105,6 +146,7 @@ class OrderListView(ListView):
         return context
 
 
+@login_required(login_url='/login')
 def ajax_calculate_results_view(request):
     orders = CustomerOrder.filter_data(request, CustomerOrder.objects.all())
     total_value, total_paid_value, remaining_value, data = 0, 0, 0, dict()
@@ -121,10 +163,12 @@ def ajax_calculate_results_view(request):
     return JsonResponse(data)
 
 
-class CreateSupplierOrderView(CreateView):
+class CreateSupplierOrderView(LoginRequiredMixin, CreateView):
     model = SupplierOrder
     template_name = "create_supplier_order.html"
     form_class = SupplierOrderForm
+
+    login_url = '/login'
 
     def get_success_url(self):
         self.new_object.refresh_from_db()
@@ -137,10 +181,12 @@ class CreateSupplierOrderView(CreateView):
         return super().form_valid(form)
 
 
-class SupplierOrderListView(ListView):
+class SupplierOrderListView(LoginRequiredMixin, ListView):
     template_name = 'list_supplier_order.html'
     model = SupplierOrder
     paginate_by = 50
+
+    login_url = '/login'
 
     def get_queryset(self):
         qs = SupplierOrder.objects.all()
@@ -156,10 +202,12 @@ class SupplierOrderListView(ListView):
         return context
 
 
-class SupplierOrderUpdateView(UpdateView):
+class SupplierOrderUpdateView(LoginRequiredMixin, UpdateView):
     model = SupplierOrder
     template_name = 'supplier_order_update.html'
     form_class = SupplierOrderEditForm
+
+    login_url = '/login'
 
     def get_success_url(self):
         instance = self.object
@@ -177,10 +225,12 @@ class SupplierOrderUpdateView(UpdateView):
         return context
 
 
-class SupplierOrderDetailView(DetailView):
+class SupplierOrderDetailView(LoginRequiredMixin,DetailView):
     template_name = 'detail_supplier_order.html'
     model = SupplierOrder
     paginate_by = 50
+
+    login_url = '/login'
 
     def get_success_url(self):
         return reverse('list_supplier_order')
@@ -195,10 +245,12 @@ class SupplierOrderDetailView(DetailView):
         return context
 
 
-class CreateOrderView(CreateView):
+class CreateOrderView(LoginRequiredMixin,CreateView):
     template_name = 'form.html'
     form_class = OrderCreateForm
     model = CustomerOrder
+
+    login_url = '/login'
 
     def get_success_url(self):
         self.new_object.refresh_from_db()
@@ -211,10 +263,12 @@ class CreateOrderView(CreateView):
         return super().form_valid(form)
 
 
-class OrderUpdateView(UpdateView):
+class OrderUpdateView(LoginRequiredMixin,UpdateView):
     model = CustomerOrder
     template_name = 'order_update.html'
     form_class = OrderEditForm
+
+    login_url = '/login'
 
     def get_success_url(self):
         instance = self.object
@@ -223,7 +277,8 @@ class OrderUpdateView(UpdateView):
             if item.part.stock <= item.part.reorder_level:
                 supplier_order = SupplierOrder.objects.create(supplier=item.part.supplier)
                 supplier_order.part.add(item.part)
-                supplier_order_item, created = SupplierOrderItem.objects.get_or_create(supplierOrder=supplier_order, part=item.part)
+                supplier_order_item, created = SupplierOrderItem.objects.get_or_create(supplierOrder=supplier_order,
+                                                                                       part=item.part)
                 if created:
                     supplier_order_item.quantity = item.part.order_quantity
                     supplier_order_item.price = item.part.cost
@@ -249,6 +304,7 @@ class OrderUpdateView(UpdateView):
         return context
 
 
+@login_required(login_url='/login')
 def ajax_search_parts(request, pk):
     instance = get_object_or_404(CustomerOrder, id=pk)
     q = request.GET.get('q', None)
@@ -265,6 +321,8 @@ def ajax_search_parts(request, pk):
                                      })
     return JsonResponse(data)
 
+
+@login_required(login_url='/login')
 def ajax_search_parts_supplier(request, pk):
     instance = get_object_or_404(SupplierOrder, id=pk)
     q = request.GET.get('q', None)
@@ -282,6 +340,7 @@ def ajax_search_parts_supplier(request, pk):
     return JsonResponse(data)
 
 
+@login_required(login_url='/login')
 def order_action_view(request, pk, action):
     instance = get_object_or_404(CustomerOrder, id=pk)
     if action == 'is_paid':
@@ -293,6 +352,7 @@ def order_action_view(request, pk, action):
     return redirect(reverse('home'))
 
 
+@login_required(login_url='/login')
 def ajax_add_product(request, pk, dk):
     instance = get_object_or_404(CustomerOrder, id=pk)
     part = get_object_or_404(Part, id=dk)
@@ -319,14 +379,15 @@ def ajax_add_product(request, pk, dk):
                                                }
                                       )
     data['product'] = render_to_string(template_name='include/product_container.html',
-                                      request=request,
-                                      context={'instance': instance,
-                                               'parts': all_parts,
-                                               }
-                                      )
+                                       request=request,
+                                       context={'instance': instance,
+                                                'parts': all_parts,
+                                                }
+                                       )
     return JsonResponse(data)
 
 
+@login_required(login_url='/login')
 def ajax_add_product_supplier(request, pk, dk):
     instance = get_object_or_404(SupplierOrder, id=pk)
     part = get_object_or_404(Part, id=dk)
@@ -362,6 +423,7 @@ def ajax_add_product_supplier(request, pk, dk):
     return JsonResponse(data)
 
 
+@login_required(login_url='/login')
 def ajax_modify_order_item(request, pk, action):
     order_item = get_object_or_404(OrderItem, id=pk)
     part = order_item.part
@@ -404,6 +466,7 @@ def ajax_modify_order_item(request, pk, action):
     return JsonResponse(data)
 
 
+@login_required(login_url='/login')
 def ajax_modify_supplier_order_item(request, pk, action):
     supplier_order_item = get_object_or_404(SupplierOrderItem, id=pk)
     part = supplier_order_item.part
@@ -446,6 +509,7 @@ def ajax_modify_supplier_order_item(request, pk, action):
     return JsonResponse(data)
 
 
+@login_required(login_url='/login')
 def delete_order(request, pk):
     instance = get_object_or_404(CustomerOrder, id=pk)
     if not instance.confirm:
@@ -455,6 +519,8 @@ def delete_order(request, pk):
     else:
         return redirect((reverse('control_orders')))
 
+
+@login_required(login_url='/login')
 def delete_supplier_order(request, pk):
     instance = get_object_or_404(SupplierOrder, id=pk)
     if not instance.confirm:
