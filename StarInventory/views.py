@@ -9,9 +9,11 @@ from django.views.generic import CreateView, UpdateView, ListView, DetailView
 from django_tables2 import RequestConfig
 
 from StarElectronics2.settings import CURRENCY
-from StarInventory.forms import PartForm, CustomerForm, SupplierForm, OrderCreateForm, OrderEditForm, SupplierOrderForm
-from StarInventory.models import Part, Customer, Supplier, CustomerOrder, OrderItem, SupplierOrder
-from StarInventory.tables import OrderTable, PartTable, OrderItemTable, SupplierOrderTable, SupplierOrderDetailTable
+from StarInventory.forms import PartForm, CustomerForm, SupplierForm, OrderCreateForm, OrderEditForm, SupplierOrderForm, \
+    SupplierOrderEditForm
+from StarInventory.models import Part, Customer, Supplier, CustomerOrder, OrderItem, SupplierOrder, SupplierOrderItem
+from StarInventory.tables import OrderTable, PartTable, OrderItemTable, SupplierOrderTable, SupplierOrderDetailTable, \
+    SupplierOrderItemTable, PartTableSupplier
 
 
 def index(request):
@@ -124,7 +126,15 @@ class CreateSupplierOrderView(CreateView):
     template_name = "create_supplier_order.html"
     form_class = SupplierOrderForm
 
-    success_url = reverse_lazy("list_supplier_order")
+    def get_success_url(self):
+        self.new_object.refresh_from_db()
+        return reverse('update_supplier_order', kwargs={'pk': self.new_object.id})
+
+    def form_valid(self, form):
+        object = form.save()
+        object.refresh_from_db()
+        self.new_object = object
+        return super().form_valid(form)
 
 
 class SupplierOrderListView(ListView):
@@ -142,6 +152,27 @@ class SupplierOrderListView(ListView):
         context = super().get_context_data(**kwargs)
         supplier_orders = SupplierOrderTable(self.object_list)
         RequestConfig(self.request).configure(supplier_orders)
+        context.update(locals())
+        return context
+
+
+class SupplierOrderUpdateView(UpdateView):
+    model = SupplierOrder
+    template_name = 'supplier_order_update.html'
+    form_class = SupplierOrderEditForm
+
+    def get_success_url(self):
+        instance = self.object
+        return reverse('update_supplier_order', kwargs={'pk': self.object.id})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        instance = self.object
+        qs_p = Part.objects.all()[:12]
+        parts = PartTableSupplier(qs_p)
+        supplier_order_items = SupplierOrderItemTable(instance.supplier_order_items.all())
+        RequestConfig(self.request).configure(parts)
+        RequestConfig(self.request).configure(supplier_order_items)
         context.update(locals())
         return context
 
@@ -263,6 +294,34 @@ def ajax_add_product(request, pk, dk):
     return JsonResponse(data)
 
 
+def ajax_add_product_supplier(request, pk, dk):
+    instance = get_object_or_404(SupplierOrder, id=pk)
+    part = get_object_or_404(Part, id=dk)
+
+    supplier_order_item, created = SupplierOrderItem.objects.get_or_create(supplierOrder=instance, part=part)
+    if not instance.confirm:
+        if created:
+            supplier_order_item.quantity = 1
+            supplier_order_item.price = part.cost
+        else:
+            supplier_order_item.quantity += 1
+        supplier_order_item.save()
+        part.item_in_order += 1
+        part.save()
+
+    instance.refresh_from_db()
+    supplier_order_items = SupplierOrderItemTable(instance.supplier_order_items.all())
+    RequestConfig(request).configure(supplier_order_items)
+    data = dict()
+    data['result'] = render_to_string(template_name='include/supplier_order_container.html',
+                                      request=request,
+                                      context={'instance': instance,
+                                               'supplier_order_items': supplier_order_items
+                                               }
+                                      )
+    return JsonResponse(data)
+
+
 def ajax_modify_order_item(request, pk, action):
     order_item = get_object_or_404(OrderItem, id=pk)
     part = order_item.part
@@ -298,11 +357,55 @@ def ajax_modify_order_item(request, pk, action):
     return JsonResponse(data)
 
 
+def ajax_modify_supplier_order_item(request, pk, action):
+    supplier_order_item = get_object_or_404(SupplierOrderItem, id=pk)
+    part = supplier_order_item.part
+    instance = supplier_order_item.supplierOrder
+    if not instance.confirm:
+        if action == 'remove':
+            supplier_order_item.quantity -= 1
+            part.item_in_order -= 1
+            if supplier_order_item.quantity < 1:
+                supplier_order_item.quantity = 1
+                part.item_in_order += 1
+
+        if action == 'add':
+            supplier_order_item.quantity += 1
+            part.item_in_order += 1
+
+        part.save()
+        supplier_order_item.save()
+
+        if action == 'delete':
+            supplier_order_item.delete()
+    data = dict()
+    instance.refresh_from_db()
+    supplier_order_items = SupplierOrderItemTable(instance.supplier_order_items.all())
+    RequestConfig(request).configure(supplier_order_items)
+    data['result'] = render_to_string(template_name='include/supplier_order_container.html',
+                                      request=request,
+                                      context={
+                                          'instance': instance,
+                                          'supplier_order_items': supplier_order_items
+                                      }
+                                      )
+    return JsonResponse(data)
+
+
 def delete_order(request, pk):
     instance = get_object_or_404(CustomerOrder, id=pk)
     if not instance.confirm:
         instance.delete()
         messages.warning(request, 'The order is deleted!')
+        return redirect(reverse('home'))
+    else:
+        return redirect((reverse('control_orders')))
+
+def delete_supplier_order(request, pk):
+    instance = get_object_or_404(SupplierOrder, id=pk)
+    if not instance.confirm:
+        instance.delete()
+        messages.warning(request, 'The supplier order is deleted!')
         return redirect(reverse('home'))
     else:
         return redirect((reverse('control_orders')))

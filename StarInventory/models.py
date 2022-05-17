@@ -218,7 +218,7 @@ class SupplierOrderItem(models.Model):
 
 @receiver(post_delete, sender=SupplierOrderItem)
 def delete_supplier_order_item(sender, instance, **kwargs):
-    if not instance.customerOrder.confirm:
+    if not instance.supplierOrder.confirm:
         part = instance.part
         part.item_in_order -= instance.quantity
         part.save()

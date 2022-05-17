@@ -5,7 +5,8 @@ from .views import CreatePartView, UpdatePartView, list_parts, list_customers, C
     list_suppliers, UpdateSupplierView, CreateSupplierView, OrderListView, \
     ajax_calculate_results_view, CreateOrderView, OrderUpdateView, delete_order, ajax_add_product, \
     ajax_modify_order_item, order_action_view, ajax_search_parts, CreateSupplierOrderView, SupplierOrderDetailView, \
-    SupplierOrderListView
+    SupplierOrderListView, SupplierOrderUpdateView, ajax_add_product_supplier, ajax_modify_supplier_order_item, \
+    delete_supplier_order
 
 urlpatterns = [
     path('', views.index, name='home'),
@@ -19,8 +20,10 @@ urlpatterns = [
     path('supplier/create', CreateSupplierView.as_view(), name="create_supplier"),
     path('supplier/<int:pk>/update', UpdateSupplierView.as_view(), name="update_supplier"),
     path('supplier/order/create', CreateSupplierOrderView.as_view(), name="create_supplier_order"),
+    path('supplier/order/update/<int:pk>/', SupplierOrderUpdateView.as_view(), name="update_supplier_order"),
     path('supplier/order/list/', SupplierOrderListView.as_view(), name="list_supplier_order"),
     path('supplier/order/detail/<int:pk>', SupplierOrderDetailView.as_view(), name="detail_supplier_order"),
+    path('supplier/orders/delete/<int:pk>/', delete_supplier_order, name='delete_supplier_order'),
     path('customer/orders/list', OrderListView.as_view(), name="list_orders"),
     path('customer/orders/create', CreateOrderView.as_view(), name='create-order'),
     path('customer/orders/update/<int:pk>/', OrderUpdateView.as_view(), name='update_order'),
@@ -32,5 +35,7 @@ urlpatterns = [
     path('ajax/search-products/<int:pk>/', ajax_search_parts, name='ajax-search'),
     path('ajax/add-product/<int:pk>/<int:dk>/', ajax_add_product, name='ajax_add'),
     path('ajax/modify-product/<int:pk>/<slug:action>', ajax_modify_order_item, name='ajax_modify'),
-    path('ajax/calculate-results/', ajax_calculate_results_view, name='ajax_calculate_result')
+    path('ajax/calculate-results/', ajax_calculate_results_view, name='ajax_calculate_result'),
+    path('ajax/add-product-supplier/<int:pk>/<int:dk>', ajax_add_product_supplier, name="ajax_add_supplier"),
+    path('ajax/modify-product-supplier/<int:pk>/<slug:action>', ajax_modify_supplier_order_item, name='ajax_modify_supplier'),
 ]
