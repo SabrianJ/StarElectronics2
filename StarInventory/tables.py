@@ -43,7 +43,7 @@ class PartTableSupplier(tables.Table):
 
 
 class OrderItemTable(tables.Table):
-    total_price = tables.Column(orderable=False, verbose_name='Total Price')
+    total_price = tables.Column(orderable=True, verbose_name='Total Price')
     unit_price = tables.Column(accessor='part.cost', verbose_name='@')
     action = tables.TemplateColumn('''
         {% if not instance.confirm %}
@@ -60,7 +60,7 @@ class OrderItemTable(tables.Table):
 
 
 class SupplierOrderItemTable(tables.Table):
-    total_price = tables.Column(orderable=False, verbose_name='Total Price')
+    total_price = tables.Column(orderable=True, verbose_name='Total Price')
     unit_price = tables.Column(accessor='part.cost', verbose_name='@')
     manufacture_number = tables.Column(accessor='part.manufacturer_number', verbose_name="Manufacture No")
     action = tables.TemplateColumn('''

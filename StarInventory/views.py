@@ -220,6 +220,7 @@ class SupplierOrderUpdateView(LoginRequiredMixin, UpdateView):
         parts = PartTableSupplier(qs_p)
         parts.order_by = "-available_stock"
         supplier_order_items = SupplierOrderItemTable(instance.supplier_order_items.all())
+        supplier_order_items.order_by = "total_price"
         RequestConfig(self.request).configure(parts)
         RequestConfig(self.request).configure(supplier_order_items)
         context.update(locals())
@@ -300,6 +301,7 @@ class OrderUpdateView(LoginRequiredMixin, UpdateView):
         parts = PartTable(qs_p)
         parts.order_by = "-available_stock"
         order_items = OrderItemTable(instance.order_items.all())
+        order_items.order_by = "total_price"
         RequestConfig(self.request, paginate={"per_page": 10}).configure(parts)
         RequestConfig(self.request).configure(order_items)
         context.update(locals())
@@ -373,6 +375,7 @@ def ajax_add_product(request, pk, dk):
     all_parts = PartTable(Part.objects.all())
     all_parts.order_by = "-available_stock"
     order_items = OrderItemTable(instance.order_items.all())
+    order_items.order_by = "total_price"
     RequestConfig(request, paginate={"per_page": 10}).configure(all_parts)
     RequestConfig(request).configure(order_items)
     data = dict()
@@ -409,6 +412,7 @@ def ajax_add_product_supplier(request, pk, dk):
 
     instance.refresh_from_db()
     supplier_order_items = SupplierOrderItemTable(instance.supplier_order_items.all())
+    supplier_order_items.order_by = "total_price"
     all_parts = PartTableSupplier(Part.objects.all())
     all_parts.order_by = "-available_stock"
     RequestConfig(request, paginate={"per_page": 10}).configure(all_parts)
@@ -456,6 +460,7 @@ def ajax_modify_order_item(request, pk, action):
     all_parts = PartTable(Part.objects.all())
     all_parts.order_by = "-available_stock"
     order_items = OrderItemTable(instance.order_items.all())
+    order_items.order_by = "total_price"
     RequestConfig(request, paginate={"per_page": 10}).configure(all_parts)
     RequestConfig(request).configure(order_items)
     data['result'] = render_to_string(template_name='include/order_container.html',
@@ -501,6 +506,7 @@ def ajax_modify_supplier_order_item(request, pk, action):
     all_parts = PartTableSupplier(Part.objects.all())
     all_parts.order_by = "-available_stock"
     supplier_order_items = SupplierOrderItemTable(instance.supplier_order_items.all())
+    supplier_order_items.order_by = "total_price"
     RequestConfig(request, paginate={"per_page": 10}).configure(all_parts)
     RequestConfig(request).configure(supplier_order_items)
     data['result'] = render_to_string(template_name='include/supplier_order_container.html',
