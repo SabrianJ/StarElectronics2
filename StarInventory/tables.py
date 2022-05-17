@@ -27,9 +27,10 @@ class PartTable(tables.Table):
         template_name = 'django_tables2/bootstrap.html'
         fields = ['name', 'stock', 'reserved_stock', 'available_stock', 'cost']
 
+
 class PartTableSupplier(tables.Table):
     cost = tables.Column(orderable=False, verbose_name='Cost')
-    item_in_order = tables.Column(orderable=True, verbose_name="In Order")
+    item_in_order = tables.Column(orderable=False, verbose_name="In Order")
     action = tables.TemplateColumn(
         '<button class="btn btn-info add_button_supplier" data-href="{% url "ajax_add_supplier" instance.id record.id %}">Add!</a>',
         orderable=False
@@ -57,6 +58,7 @@ class OrderItemTable(tables.Table):
         template_name = 'django_tables2/bootstrap.html'
         fields = ['part', 'quantity', 'unit_price', 'total_price']
 
+
 class SupplierOrderItemTable(tables.Table):
     total_price = tables.Column(orderable=False, verbose_name='Total Price')
     unit_price = tables.Column(accessor='part.cost', verbose_name='@')
@@ -72,14 +74,15 @@ class SupplierOrderItemTable(tables.Table):
     class Meta:
         model = OrderItem
         template_name = 'django_tables2/bootstrap.html'
-        fields = ['part','manufacture_number', 'quantity', 'unit_price', 'total_price']
+        fields = ['part', 'manufacture_number', 'quantity', 'unit_price', 'total_price']
 
 
 class SupplierOrderTable(tables.Table):
     date = tables.DateColumn(format="d/m/Y")
     value = tables.Column(orderable=True, verbose_name="Total price")
     action = tables.TemplateColumn(
-        '<a href="{% url "update_supplier_order" record.id %}" class="btn btn-info"><i class="fa fa-edit"></i></a>', orderable=False)
+        '<a href="{% url "update_supplier_order" record.id %}" class="btn btn-info"><i class="fa fa-edit"></i></a>',
+        orderable=False)
 
     class Meta:
         model = SupplierOrder

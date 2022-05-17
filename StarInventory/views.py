@@ -51,7 +51,7 @@ def list_parts(request):
     return render(request, "list_parts.html", context)
 
 
-class CreatePartView(LoginRequiredMixin,CreateView):
+class CreatePartView(LoginRequiredMixin, CreateView):
     model = Part
     form_class = PartForm
     template_name = "create_part.html"
@@ -128,7 +128,7 @@ class UpdateSupplierView(LoginRequiredMixin, UpdateView):
 class OrderListView(LoginRequiredMixin, ListView):
     template_name = 'list.html'
     model = CustomerOrder
-    paginate_by = 50
+    paginate_by = 8
 
     login_url = '/login'
 
@@ -141,7 +141,7 @@ class OrderListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         orders = OrderTable(self.object_list)
-        RequestConfig(self.request).configure(orders)
+        RequestConfig(self.request, paginate={"per_page": 8}).configure(orders)
         context.update(locals())
         return context
 
@@ -184,7 +184,7 @@ class CreateSupplierOrderView(LoginRequiredMixin, CreateView):
 class SupplierOrderListView(LoginRequiredMixin, ListView):
     template_name = 'list_supplier_order.html'
     model = SupplierOrder
-    paginate_by = 50
+    paginate_by = 8
 
     login_url = '/login'
 
@@ -197,7 +197,7 @@ class SupplierOrderListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         supplier_orders = SupplierOrderTable(self.object_list)
-        RequestConfig(self.request).configure(supplier_orders)
+        RequestConfig(self.request, paginate={"per_page": 8}).configure(supplier_orders)
         context.update(locals())
         return context
 
@@ -216,8 +216,9 @@ class SupplierOrderUpdateView(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         instance = self.object
-        qs_p = Part.objects.all()[:12]
+        qs_p = Part.objects.all()
         parts = PartTableSupplier(qs_p)
+        parts.order_by = "-available_stock"
         supplier_order_items = SupplierOrderItemTable(instance.supplier_order_items.all())
         RequestConfig(self.request).configure(parts)
         RequestConfig(self.request).configure(supplier_order_items)
@@ -225,7 +226,7 @@ class SupplierOrderUpdateView(LoginRequiredMixin, UpdateView):
         return context
 
 
-class SupplierOrderDetailView(LoginRequiredMixin,DetailView):
+class SupplierOrderDetailView(LoginRequiredMixin, DetailView):
     template_name = 'detail_supplier_order.html'
     model = SupplierOrder
     paginate_by = 50
@@ -245,7 +246,7 @@ class SupplierOrderDetailView(LoginRequiredMixin,DetailView):
         return context
 
 
-class CreateOrderView(LoginRequiredMixin,CreateView):
+class CreateOrderView(LoginRequiredMixin, CreateView):
     template_name = 'form.html'
     form_class = OrderCreateForm
     model = CustomerOrder
@@ -263,7 +264,7 @@ class CreateOrderView(LoginRequiredMixin,CreateView):
         return super().form_valid(form)
 
 
-class OrderUpdateView(LoginRequiredMixin,UpdateView):
+class OrderUpdateView(LoginRequiredMixin, UpdateView):
     model = CustomerOrder
     template_name = 'order_update.html'
     form_class = OrderEditForm
@@ -295,10 +296,11 @@ class OrderUpdateView(LoginRequiredMixin,UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         instance = self.object
-        qs_p = Part.objects.all()[:12]
+        qs_p = Part.objects.all()
         parts = PartTable(qs_p)
+        parts.order_by = "-available_stock"
         order_items = OrderItemTable(instance.order_items.all())
-        RequestConfig(self.request).configure(parts)
+        RequestConfig(self.request, paginate={"per_page": 10}).configure(parts)
         RequestConfig(self.request).configure(order_items)
         context.update(locals())
         return context
@@ -328,7 +330,7 @@ def ajax_search_parts_supplier(request, pk):
     q = request.GET.get('q', None)
     parts = Part.objects.filter(name__startswith=q)
     parts = parts[:12]
-    parts = PartTableSupplier(parts)
+    parts = PartTableSupplier(parts, order_by="-available_stock")
     RequestConfig(request).configure(parts)
     data = dict()
     data['parts'] = render_to_string(template_name='include/supplier_product_container.html',
@@ -369,7 +371,9 @@ def ajax_add_product(request, pk, dk):
             part.save()
     instance.refresh_from_db()
     all_parts = PartTable(Part.objects.all())
+    all_parts.order_by = "-available_stock"
     order_items = OrderItemTable(instance.order_items.all())
+    RequestConfig(request, paginate={"per_page": 10}).configure(all_parts)
     RequestConfig(request).configure(order_items)
     data = dict()
     data['result'] = render_to_string(template_name='include/order_container.html',
@@ -406,6 +410,8 @@ def ajax_add_product_supplier(request, pk, dk):
     instance.refresh_from_db()
     supplier_order_items = SupplierOrderItemTable(instance.supplier_order_items.all())
     all_parts = PartTableSupplier(Part.objects.all())
+    all_parts.order_by = "-available_stock"
+    RequestConfig(request, paginate={"per_page": 10}).configure(all_parts)
     RequestConfig(request).configure(supplier_order_items)
     data = dict()
     data['result'] = render_to_string(template_name='include/supplier_order_container.html',
@@ -448,7 +454,9 @@ def ajax_modify_order_item(request, pk, action):
     data = dict()
     instance.refresh_from_db()
     all_parts = PartTable(Part.objects.all())
+    all_parts.order_by = "-available_stock"
     order_items = OrderItemTable(instance.order_items.all())
+    RequestConfig(request, paginate={"per_page": 10}).configure(all_parts)
     RequestConfig(request).configure(order_items)
     data['result'] = render_to_string(template_name='include/order_container.html',
                                       request=request,
@@ -491,7 +499,9 @@ def ajax_modify_supplier_order_item(request, pk, action):
     data = dict()
     instance.refresh_from_db()
     all_parts = PartTableSupplier(Part.objects.all())
+    all_parts.order_by = "-available_stock"
     supplier_order_items = SupplierOrderItemTable(instance.supplier_order_items.all())
+    RequestConfig(request, paginate={"per_page": 10}).configure(all_parts)
     RequestConfig(request).configure(supplier_order_items)
     data['result'] = render_to_string(template_name='include/supplier_order_container.html',
                                       request=request,
