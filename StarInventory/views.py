@@ -313,9 +313,8 @@ def ajax_search_parts(request, pk):
     instance = get_object_or_404(CustomerOrder, id=pk)
     q = request.GET.get('q', None)
     parts = Part.objects.filter(name__startswith=q)
-    parts = parts[:12]
     parts = PartTable(parts)
-    RequestConfig(request).configure(parts)
+    RequestConfig(request, paginate={"per_page": 10}).configure(parts)
     data = dict()
     data['parts'] = render_to_string(template_name='include/product_container.html',
                                      request=request,
@@ -331,9 +330,8 @@ def ajax_search_parts_supplier(request, pk):
     instance = get_object_or_404(SupplierOrder, id=pk)
     q = request.GET.get('q', None)
     parts = Part.objects.filter(name__startswith=q)
-    parts = parts[:12]
     parts = PartTableSupplier(parts, order_by="-available_stock")
-    RequestConfig(request).configure(parts)
+    RequestConfig(request, paginate={"per_page": 10}).configure(parts)
     data = dict()
     data['parts'] = render_to_string(template_name='include/supplier_product_container.html',
                                      request=request,
