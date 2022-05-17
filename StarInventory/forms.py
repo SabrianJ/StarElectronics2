@@ -7,10 +7,12 @@ class PartForm(forms.ModelForm):
     class Meta:
         model = Part
         fields = (
-            'manufacturer_number', 'name', 'stock', 'cost', 'reorder_level', 'order_quantity', 'description', 'manufacturer',
+            'manufacturer_number', 'name', 'stock', 'cost', 'reorder_level', 'order_quantity', 'description',
+            'manufacturer',
             'supplier')
         widgets = {
-            'manufacturer_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Manufacture number'}),
+            'manufacturer_number': forms.TextInput(
+                attrs={'class': 'form-control', 'placeholder': 'Manufacture number'}),
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Name'}),
             'stock': forms.NumberInput(attrs={'class': 'form-control'}),
             'cost': forms.NumberInput(attrs={'class': 'form-control'}),
@@ -47,12 +49,10 @@ class SupplierForm(forms.ModelForm):
 class SupplierOrderForm(forms.ModelForm):
     class Meta:
         model = SupplierOrder
-        fields = ('part', 'supplier', 'quantity', 'date')
+        fields = ('date', 'supplier')
         widgets = {
-            'part': forms.Select(attrs={'class': 'form-control'}),
-            'supplier': forms.Select(attrs={'class': 'form-control'}),
-            'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
-            'date': forms.DateInput(attrs={'class': 'form-control'})
+            'date': forms.DateInput(attrs={'class': 'form-control'}),
+            'supplier': forms.Select(attrs={'class': 'form-control'})
         }
 
 
@@ -62,6 +62,17 @@ class BaseForm(forms.Form):
         super().__init__(*args, **kwargs)
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'form-control'
+
+
+class SupplierOrderEditForm(BaseForm, forms.ModelForm):
+    class Meta:
+        model = SupplierOrder
+        fields = ('date', 'supplier', 'status')
+        widgets = {
+            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'supplier': forms.Select(attrs={'class': 'form-control'}),
+            'status': forms.CheckboxInput(attrs={'class': 'form-control'})
+        }
 
 
 class OrderCreateForm(BaseForm, forms.ModelForm):

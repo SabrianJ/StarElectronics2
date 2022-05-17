@@ -58,6 +58,7 @@ class Part(models.Model):
     order_quantity = models.IntegerField(null=False, blank=False, default=20)
     reserved_stock = models.IntegerField(null=False, blank=False, default=0)
     available_stock = models.IntegerField(null=False, blank=False, default=0)
+    item_in_order = models.IntegerField(null=False, blank=False, default=0)
     description = models.TextField(null=False, blank=False, max_length=100)
     manufacturer = models.CharField(null=False, blank=False, max_length=20)
     supplier = models.ForeignKey(Supplier, on_delete=models.DO_NOTHING)
@@ -146,26 +147,42 @@ def delete_order_item(sender, instance, **kwargs):
 
 
 class SupplierOrder(models.Model):
-    part = models.ForeignKey(Part, on_delete=models.DO_NOTHING)
     supplier = models.ForeignKey(Supplier, on_delete=models.DO_NOTHING)
-    quantity = models.IntegerField(null=False, blank=False, default=1)
+    status = models.BooleanField(null=False, default=False)
     date = models.DateField(_("Date"), default=datetime.date.today)
-    total_price = models.DecimalField(default=0.00, decimal_places=2, max_digits=20)
+    part = models.ManyToManyField(Part, through="SupplierOrderItem")
+    value = models.DecimalField(default=0.00, decimal_places=2, max_digits=20)
+    confirm = models.BooleanField(null=False, default=False)
+
+    class Meta:
+        ordering = ['-date']
 
     def __str__(self):
         return f"{self.supplier.name} - {self.id}"
 
+    def get_edit_url(self):
+        return reverse('update_order', kwargs={'pk': self.id})
+
     def tag_final_value(self):
-        return f'{CURRENCY} {self.total_price}'
+        return f'{CURRENCY} {self.value}'
 
     def get_detail_url(self):
         return reverse('detail_supplier_order', kwargs={'pk': self.id})
 
     def save(self, *args, **kwargs):
-        part = self.part
-        part.stock += self.quantity
-        part.save()
-        self.total_price = self.part.cost * self.quantity
+        if not self.confirm:
+            supplier_order_items = self.supplier_order_items.all()
+            self.value = supplier_order_items.aggregate(Sum('total_price'))[
+                'total_price__sum'] if supplier_order_items.exists() else 0.00
+            if self.status:
+                for supplier_order_item in supplier_order_items:
+                    part = supplier_order_item.part
+                    part.item_in_order -= supplier_order_item.quantity
+                    part.stock += supplier_order_item.quantity
+                    part.save()
+                self.confirm = True
+        else:
+            self.status = True
         super().save(*args, **kwargs)
 
     @staticmethod
@@ -176,3 +193,33 @@ class SupplierOrder(models.Model):
             print(date_start, date_end)
             queryset = queryset.filter(date__range=[date_start, date_end])
         return queryset
+
+
+class SupplierOrderItem(models.Model):
+    part = models.ForeignKey(Part, on_delete=models.CASCADE)
+    supplierOrder = models.ForeignKey(SupplierOrder, on_delete=models.CASCADE, related_name='supplier_order_items')
+    quantity = models.IntegerField(null=False, blank=False, default=1)
+    total_price = models.DecimalField(default=0.00, decimal_places=2, max_digits=20)
+
+    def __str__(self):
+        return f"{self.part.name}"
+
+    def save(self, *args, **kwargs):
+        if not self.supplierOrder.confirm:
+            self.total_price = Decimal(self.quantity) * Decimal(self.part.cost)
+            super().save(*args, **kwargs)
+            self.supplierOrder.save()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=('part', 'supplierOrder'), name='once_per_supplierOrder_part')
+        ]
+
+
+@receiver(post_delete, sender=SupplierOrderItem)
+def delete_supplier_order_item(sender, instance, **kwargs):
+    if not instance.customerOrder.confirm:
+        part = instance.part
+        part.item_in_order -= instance.quantity
+        part.save()
+        instance.supplierOrder.save()
