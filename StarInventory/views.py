@@ -221,10 +221,20 @@ class OrderUpdateView(UpdateView):
         order_item = OrderItem.objects.filter(customerOrder=instance)
         for item in order_item:
             if item.part.stock <= item.part.reorder_level:
-                supplier_order = SupplierOrder.objects.create(part=item.part,
-                                                              supplier=item.part.supplier,
-                                                              quantity=item.part.order_quantity)
+                supplier_order = SupplierOrder.objects.create(supplier=item.part.supplier)
+                supplier_order.part.add(item.part)
+                supplier_order_item, created = SupplierOrderItem.objects.get_or_create(supplierOrder=supplier_order, part=item.part)
+                if created:
+                    supplier_order_item.quantity = item.part.order_quantity
+                    supplier_order_item.price = item.part.cost
+                else:
+                    supplier_order_item.quantity = item.part.order_quantity
+
+                item.part.item_in_order = item.part.order_quantity
+                item.part.save()
+                supplier_order_item.save()
                 supplier_order.save()
+
         return reverse('update_order', kwargs={'pk': self.object.id})
 
     def get_context_data(self, **kwargs):
