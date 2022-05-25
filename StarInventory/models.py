@@ -23,12 +23,14 @@ class Customer(models.Model):
         max_length=255,
         unique=True,
     )
+    address = models.CharField(null=False, blank=False, max_length=50)
 
     def __str__(self):
         return self.name
 
     def save(self, *args, **kwargs):
-        self.name = self.name.capitalize()
+        self.name = self.name.title()
+        self.address = self.address.title()
         return super(Customer, self).save(*args, **kwargs)
 
 
@@ -40,12 +42,14 @@ class Supplier(models.Model):
         max_length=255,
         unique=True,
     )
+    address = models.CharField(null=False, blank=False, max_length=50)
 
     def __str__(self):
         return self.name
 
     def save(self, *args, **kwargs):
-        self.name = self.name.capitalize()
+        self.name = self.name.title()
+        self.address = self.address.title()
         return super(Supplier, self).save(*args, **kwargs)
 
 
