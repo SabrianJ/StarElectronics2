@@ -16,14 +16,14 @@ CURRENCY = settings.CURRENCY
 
 # Create your models here.
 class Customer(models.Model):
-    name = models.CharField(null=False, blank=False, max_length=50)
+    name = models.CharField(null=False, blank=False, max_length=100)
     phoneNumber = models.CharField(null=False, blank=False, max_length=15)
     email = models.EmailField(
         verbose_name='email address',
         max_length=255,
         unique=True,
     )
-    address = models.CharField(null=False, blank=False, max_length=50)
+    address = models.CharField(null=False, blank=False, max_length=255)
 
     def __str__(self):
         return self.name
@@ -35,14 +35,14 @@ class Customer(models.Model):
 
 
 class Supplier(models.Model):
-    name = models.CharField(null=False, blank=False, max_length=50)
+    name = models.CharField(null=False, blank=False, max_length=100)
     phoneNumber = models.CharField(null=False, blank=False, max_length=15)
     email = models.EmailField(
         verbose_name='email address',
         max_length=255,
         unique=True,
     )
-    address = models.CharField(null=False, blank=False, max_length=50)
+    address = models.CharField(null=False, blank=False, max_length=255)
 
     def __str__(self):
         return self.name
